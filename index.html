@@ -1411,34 +1411,44 @@ document.getElementById('deleteProjectBtn').onclick = async () => {
 
 
 function loadProjectToUI(data) {
-    document.getElementById("projectName").value = data.projectName;
+
+    document.getElementById("projectName").value =
+        data.projectName;
 
     if (window.createCalendarAction) {
-        window.createCalendarAction(data.startDate);
-    }
-    
-    // ✅ NOTLARI STATE İLE YÜKLE (EN KRİTİK KISIM)
-    const noteList = document.getElementById("noteList");
 
-    if (noteList) {
-      notesState = data.notes || {};
-       renderNotesBoard();                // 👈 BURASI
+        window.createCalendarAction(
+            data.startDate
+        );
     }
 
-    // TAKVİMİ YÜKLE
+    // NOTES LOAD
+    notesState = data.notes || {};
+
+    renderNotesBoard();
+
+    // TIMELINE LOAD
     setTimeout(() => {
+
         if (data.cells) {
+
             data.cells.forEach(c => {
+
                 const t = document.querySelector(
                     `.cell.timeline[data-col="${c.col}"][data-ep="${c.ep}"][data-proc_type="${c.procType}"]`
                 );
+
                 if (t) {
+
                     t.textContent = c.text;
+
                     t.style.backgroundColor = c.bg;
+
                     t.classList.add("filled");
                 }
             });
         }
+
     }, 600);
 }
     
