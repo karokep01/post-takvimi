@@ -220,14 +220,6 @@
         .episode-v { background: #6FBF73 !important; color: #000 !important; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; transform: rotate(180deg); font-size: 12px; height: 100% !important; border-right: 1px solid var(--border-color); }
         .divider { height: 12px; background: #000; grid-column: 1 / -1; }
 
-        .sidebar { width: var(--sidebar-width); background: #000; border-left: 2px solid #333; display: flex; flex-direction: column; transition: 0.3s ease; flex-shrink: 0; z-index: 3000; }
-        .sidebar.closed { margin-right: calc(var(--sidebar-width) * -1); width: 0; visibility: hidden; }
-        
-        .sidebar-header { padding: 15px; background: var(--bg-header); text-align: center; font-weight: bold; border-bottom: 1px solid #333; }
-        .todo-filter-bar { display: flex; background: #111; border-bottom: 1px solid #333; }
-        .filter-btn { flex: 1; padding: 10px; background: transparent; color: #888; border: none; cursor: pointer; font-size: 11px; text-transform: uppercase; }
-        .filter-btn.active { color: white; background: #222; border-bottom: 2px solid var(--accent); }
-        .sidebar-content { flex: 1; padding: 15px; overflow-y: auto; }
         .note-input-area { display: flex; gap: 5px; padding: 15px 15px 5px 15px; }
         .note-input { flex: 1; background: #111; border: 1px solid #444; color: white; padding: 8px; border-radius: 4px; font-size: 13px; }
         .note-item { background: #1c1f26; padding: 12px; border-radius: 4px; margin-bottom: 8px; border-left: 4px solid #555; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
@@ -493,6 +485,442 @@
     width: 100%;
 }
 
+.tab-page{
+    display:none;
+    width:100%;
+    height:100%;
+    flex:1;
+}
+
+.tab-page.active{
+    display:flex;
+    flex:1;
+}
+
+#timelinePage{
+    display:flex;
+}
+
+#notesPage{
+    display:none;
+    flex-direction:column;
+    width:100%;
+    height:100%;
+}
+
+.notes-sheet{
+    width:100%;
+    height:100%;
+    background:#0f1115;
+    display:flex;
+    flex-direction:column;
+}
+
+.notes-toolbar{
+    padding:15px;
+    background:#15171c;
+    border-bottom:1px solid #333;
+    font-weight:bold;
+}
+
+.bottom-tabs button{
+
+    flex:none;
+
+    width:auto;
+
+    min-width:110px;
+
+    height:28px;
+
+    padding:0 16px;
+
+    border:none;
+
+    border-radius:6px 6px 0 0;
+
+    background:#1a1d26;
+
+    color:#aaa;
+
+    font-size:12px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:0.2s;
+
+    border:1px solid #2b2f3a;
+
+    border-bottom:none;
+}
+
+.bottom-tabs button{
+
+    min-width:110px;
+
+    height:28px;
+
+    padding:0 16px;
+
+    border:none;
+
+    border-radius:6px 6px 0 0;
+
+    background:#1a1d26;
+
+    color:#aaa;
+
+    font-size:12px;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:0.2s;
+
+    border:1px solid #2b2f3a;
+
+    border-bottom:none;
+}
+
+.bottom-tabs button:hover{
+
+    background:#222733;
+
+    color:white;
+}
+
+.bottom-tabs button.active{
+
+    background:#0f1115;
+
+    color:#00ff99;
+
+    border-color:#00ff99;
+}
+
+.tab-btn{
+    flex:1;
+    background:#1a1c23;
+    color:#888;
+    border:none;
+    cursor:pointer;
+    font-weight:bold;
+    font-size:12px;
+}
+
+.tab-btn.active{
+    background:#000;
+    color:#00ff00;
+}
+
+#notesGridBody{
+    width:max-content;
+    min-width:100%;
+}
+
+.main-content{
+    display:flex;
+    flex-direction:column;
+    height:100%;
+}
+
+.notes-board{
+    width:100%;
+    height:100%;
+    padding-bottom:90px;
+
+    overflow:auto;
+
+    background:#0d0f14;
+}
+
+.notes-grid-header{
+    display:grid;
+
+    width:max-content;
+    min-width:100%;
+
+    position:sticky;
+    top:0;
+    z-index:50;
+}
+
+.header-cell{
+    background:#15171c;
+    border:1px solid #222;
+    padding:14px;
+    font-size:11px;
+    font-weight:bold;
+    text-align:center;
+}
+
+.notes-row{
+    display:grid;
+
+    width:max-content;
+    min-width:100%;
+}
+
+.notes-episode{
+
+    position:sticky;
+
+    left:0;
+
+    z-index:80;
+
+    background:#111318;
+
+    border:1px solid #222;
+
+    border-right:2px solid #333;
+
+    padding:15px;
+
+    font-weight:bold;
+
+    min-width:120px;
+
+    width:120px;
+
+    box-sizing:border-box;
+}
+
+.notes-grid-header > div:first-child{
+
+    position:sticky;
+
+    left:0;
+
+    z-index:100;
+
+    background:#111318;
+
+    min-width:120px;
+
+    width:120px;
+
+    box-sizing:border-box;
+
+    border-right:2px solid #333;
+}
+
+.notes-cell{
+    border:1px solid #222;
+
+    min-height:120px;
+
+    background:#0f1115;
+
+    padding:10px;
+
+    box-sizing:border-box;
+
+    overflow:hidden;
+
+    position:relative;
+}
+
+.notes-textarea{
+
+    width:100%;
+    height:100%;
+
+    min-height:100px;
+
+    box-sizing:border-box;
+
+    resize:none;
+
+    background:transparent;
+
+    border:none;
+    outline:none;
+
+    color:white;
+
+    font-size:13px;
+    line-height:1.5;
+
+    font-family:inherit;
+
+    overflow:hidden;
+
+    white-space:pre-wrap;
+
+    overflow-wrap:anywhere;
+    word-break:break-word;
+}
+
+.notes-textarea:focus{
+    background:#15171c;
+}
+
+.notes-dept{
+    position:relative;
+}
+
+.resize-handle{
+    position:absolute;
+    top:0;
+    right:0;
+
+    width:6px;
+    height:100%;
+
+    cursor:col-resize;
+
+    background:transparent;
+}
+
+.resize-handle:hover{
+    background:#00ff99;
+}
+
+.notes-grid-header{
+
+    backdrop-filter:blur(10px);
+
+    background:rgba(15,17,21,0.92);
+
+    border-bottom:1px solid #2d3342;
+
+    box-shadow:
+        0 4px 20px rgba(0,0,0,0.35);
+}
+
+/* ROW HOVER */
+
+.notes-row{
+
+    transition:0.18s;
+}
+
+.notes-row:hover{
+
+    background:rgba(255,255,255,0.02);
+}
+
+/* CELLS */
+
+.notes-cell{
+
+    transition:
+        background 0.15s,
+        border-color 0.15s;
+
+    border-color:#232733;
+}
+
+.notes-cell:hover{
+
+    background:#141922;
+
+    border-color:#3a4255;
+}
+
+/* TEXTAREA */
+
+.notes-textarea:focus{
+
+    background:rgba(0,255,153,0.03);
+
+    box-shadow:
+        inset 0 0 0 1px #00ff99;
+
+    border-radius:6px;
+}
+
+/* EPISODE COLUMN */
+
+.notes-episode{
+
+    font-size:20px;
+
+    letter-spacing:1px;
+
+    color:white;
+
+    background:
+        linear-gradient(
+            180deg,
+            #151922,
+            #0f1115
+        );
+}
+
+/* GRID COLORS */
+
+.notes-cell,
+.notes-episode{
+
+    border-color:#232733;
+}
+
+/* HEADER ACCENTS */
+
+.notes-dept[data-dep="edit"]{
+
+    box-shadow:
+        inset 0 -2px #ff5c5c;
+}
+
+.notes-dept[data-dep="cuts"]{
+
+    box-shadow:
+        inset 0 -2px #ff9f43;
+}
+
+.notes-dept[data-dep="vfx"]{
+
+    box-shadow:
+        inset 0 -2px #8c7ae6;
+}
+
+.notes-dept[data-dep="color"]{
+
+    box-shadow:
+        inset 0 -2px #00d2d3;
+}
+
+.notes-dept[data-dep="sound"]{
+
+    box-shadow:
+        inset 0 -2px #54a0ff;
+}
+
+.notes-dept[data-dep="music"]{
+
+    box-shadow:
+        inset 0 -2px #5f27cd;
+}
+
+.notes-dept[data-dep="send"]{
+
+    box-shadow:
+        inset 0 -2px #10ac84;
+}
+
+.notes-dept{
+
+    display:flex;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:8px;
+
+    font-size:12px;
+
+    letter-spacing:0.5px;
+
+    text-transform:uppercase;
+}
+
     </style>
 </head>
 <body>
@@ -525,7 +953,6 @@
     <button onclick="handleLoadAction()" class="nav-btn"><span>📂</span> LOAD</button>
     
     <button id="exportVerticalBtn" class="nav-btn"><span>📄</span> VERTICAL VIEW</button>
-    <button onclick="toggleSidebar()" class="nav-btn" style="background: #222;"><span>📝</span> NOTES</button>
   <button id="googleLoginBtn" onclick="loginWithGoogle()" class="nav-btn" style="border-color: #4285F4;">
         ⚡Log In
     </button>
@@ -593,53 +1020,96 @@
 <div id="dateSummaryPop" class="date-summary-pop"></div>
 
 <div class="main-layout">
-    <div class="container" id="mainContainer">
-        <div id="selection-box"></div>
-        <div id="todayLine" class="today-line"></div>
-        <div class="header" id="header"></div>
-        <div class="grid" id="grid"></div>
+
+    <!-- TIMELINE PAGE -->
+    <div id="timelinePage" class="tab-page active">
+
+        <div class="container" id="mainContainer">
+            <div id="selection-box"></div>
+            <div id="todayLine" class="today-line"></div>
+            <div class="header" id="header"></div>
+            <div class="grid" id="grid"></div>
+        </div>
+
+        <div id="verticalViewContainer"></div>
+
     </div>
 
-    <div id="verticalViewContainer"></div>
 
+<!-- NOTES PAGE -->
+<div id="notesPage" class="tab-page">
 
-<div id="userMenuWrapper" style="position:relative; display:none;">
-  <div id="userBox" style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-    <img id="userPhoto" style="width:26px;height:26px;border-radius:50%;">
-    <span id="userName" style="font-size:12px;"></span>
-  </div>
+    <div class="notes-board">
 
-  <div id="userDropdown" style="
-    display:none;
-    position:absolute;
-    top:35px;
-    right:0;
-    background:#1c1f26;
-    border:1px solid #333;
-    border-radius:6px;
-    min-width:160px;
-    z-index:9999;
-  ">
-    <div class="item" onclick="switchAccount()">🔄 Farklı hesap</div>
-    <div class="item" onclick="logout()">🚪 Çıkış</div>
-  </div>
+        <!-- HEADER -->
+        <div class="notes-grid-header">
+
+            <div class="notes-ep-col header-cell">
+                EPISODES
+            </div>
+
+       <div class="notes-dept header-cell" data-dep="edit">
+    🎬 EDIT
+    <div class="resize-handle"></div>
+</div>
+
+<div class="notes-dept header-cell" data-dep="cuts">
+    ✂ CUTS
+    <div class="resize-handle"></div>
+</div>
+
+<div class="notes-dept header-cell" data-dep="vfx">
+    ✨ VFX
+    <div class="resize-handle"></div>
+</div>
+
+<div class="notes-dept header-cell" data-dep="color">
+    🎨 COLOR
+    <div class="resize-handle"></div>
+</div>
+
+<div class="notes-dept header-cell" data-dep="sound">
+    🔊 SOUND
+    <div class="resize-handle"></div>
+</div>
+
+<div class="notes-dept header-cell" data-dep="music">
+    🎵 MUSIC
+    <div class="resize-handle"></div>
+</div>
+
+<div class="notes-dept header-cell" data-dep="send">
+    📦 SEND
+    <div class="resize-handle"></div>
+</div>
+
+        </div>
+
+        <div id="notesGridBody"></div>
+
+    </div>
+
+</div>
+
 </div>
 
 
-    <div class="sidebar closed" id="sidebar">
-        <div class="sidebar-header">TO DO LIST</div>
-        <div class="note-input-area">
-            <input type="text" id="noteInput" class="note-input" placeholder="Add a note...">
-            <button onclick="addNote()" style="background:var(--accent); color:white; border:none; padding:0 12px; border-radius:4px; cursor:pointer; font-weight:bold;">ADD</button>
-        </div>
-        <div class="todo-filter-bar">
-            <button class="filter-btn active" onclick="filterNotes('all', this)">ALL</button>
-            <button class="filter-btn" onclick="filterNotes('waiting', this)">WAITING</button>
-            <button class="filter-btn" onclick="filterNotes('done', this)">DONE</button>
-        </div>
-        <div class="sidebar-content" id="noteList"></div>
-    </div>
+
+<!-- ALT TAB BAR -->
+<div class="bottom-tabs">
+
+    <button class="tab-btn active"
+            onclick="switchTab('timeline', this)">
+        TIMELINE
+    </button>
+
+    <button class="tab-btn"
+            onclick="switchTab('notes', this)">
+        NOTES
+    </button>
+
 </div>
+
 
 <div id="contextMenu" class="context-menu"></div>
 
@@ -796,15 +1266,15 @@ window.handleSaveAction = async (isManual = false) => {
         bg: c.style.backgroundColor
     }));
 
-    const notesArray = [...notesState];
 
-    const data = {
-        projectName,
-        startDate: document.getElementById("startDate")?.value || "",
-        cells,
-        notes: notesArray,
-        lastUpdated: new Date().toISOString()
-    };
+
+const data = {
+    projectName,
+    startDate: document.getElementById("startDate")?.value || "",
+    cells,
+    notes: notesState,
+    lastUpdated: new Date().toISOString()
+};
 
     try {
         const userId = auth.currentUser.uid;
@@ -951,8 +1421,8 @@ function loadProjectToUI(data) {
     const noteList = document.getElementById("noteList");
 
     if (noteList) {
-        notesState = data.notes || []; // 👈 BURASI
-        renderNotes();                 // 👈 BURASI
+      notesState = data.notes || {};
+       renderNotesBoard();                // 👈 BURASI
     }
 
     // TAKVİMİ YÜKLE
@@ -1100,7 +1570,102 @@ let isSaving = false;
 
 let TOTAL_DAYS = 365, TOTAL_EPISODES = 16, dates = [], selectedCells = new Set(), dragSource = null, contextTarget = null, isSelecting = false, startX, startY;
 let currentActiveDept = 'all'; 
-let notesState = [];
+let notesState = {};
+
+let columnWidths = {
+    episode: 120,
+    edit: 260,
+    cuts: 260,
+    vfx: 260,
+    color: 260,
+    sound: 260,
+    music: 260,
+    send: 260
+};
+
+function applyGridTemplate(){
+
+    const template = `
+        ${columnWidths.episode}px
+        ${columnWidths.edit}px
+        ${columnWidths.cuts}px
+        ${columnWidths.vfx}px
+        ${columnWidths.color}px
+        ${columnWidths.sound}px
+        ${columnWidths.music}px
+        ${columnWidths.send}px
+    `;
+
+    // HEADER
+    const header =
+        document.querySelector('.notes-grid-header');
+
+    if(header){
+
+        header.style.gridTemplateColumns = template;
+
+        header.style.width = "max-content";
+    }
+
+    // ROWS
+    document.querySelectorAll('.notes-row')
+    .forEach(row => {
+
+        row.style.gridTemplateColumns = template;
+
+        row.style.width = "max-content";
+    });
+
+    // BODY
+    const body =
+        document.getElementById('notesGridBody');
+
+    if(body){
+
+        const totalWidth =
+            Object.values(columnWidths)
+            .reduce((a,b)=>a+b,0);
+
+        body.style.width = totalWidth + "px";
+    }
+}
+
+function updateGridColumns(){
+
+    const template = `
+        120px
+        ${columnWidths.edit}px
+        ${columnWidths.cuts}px
+        ${columnWidths.vfx}px
+        ${columnWidths.color}px
+        ${columnWidths.sound}px
+        ${columnWidths.music}px
+        ${columnWidths.send}px
+    `;
+
+    const header =
+        document.querySelector('.notes-grid-header');
+
+    if(header){
+        header.style.gridTemplateColumns = template;
+    }
+
+    document.querySelectorAll('.notes-row')
+        .forEach(row => {
+
+            row.style.gridTemplateColumns = template;
+        });
+}
+
+const departments = [
+    "edit",
+    "cuts",
+    "vfx",
+    "color",
+    "sound",
+    "music",
+    "send"
+];
         let currentProjectId = null;
 
     let historyStack = [];
@@ -1137,13 +1702,24 @@ let notesState = [];
     const closeModalBtn = document.getElementById('closeModalBtn');
     const confirmDateBtn = document.getElementById('confirmDateBtn');
 
-    openModalBtn.onclick = () => { 
-        dateModal.style.display = 'flex'; 
-        setTimeout(() => {
-            const dateInput = document.getElementById("startDate");
-            dateInput.focus(); if (dateInput.showPicker) dateInput.showPicker();
-        }, 150);
-    };
+openModalBtn.onclick = () => {
+
+    goTimelineTab();
+
+    dateModal.style.display = 'flex';
+
+    setTimeout(() => {
+
+        const dateInput =
+            document.getElementById("startDate");
+
+        dateInput.focus();
+
+        if (dateInput.showPicker)
+            dateInput.showPicker();
+
+    }, 150);
+};
 
     closeModalBtn.onclick = () => { dateModal.style.display = 'none'; };
     confirmDateBtn.onclick = () => {
@@ -1152,7 +1728,107 @@ let notesState = [];
         createCalendarAction(val); dateModal.style.display = 'none';
     };
 
-    function toggleSidebar() { document.getElementById('sidebar').classList.toggle('closed'); }
+window.switchTab = function(tab, btn){
+
+    // Önce ikisini de kapat
+    document.getElementById('timelinePage').style.display = 'none';
+    document.getElementById('notesPage').style.display = 'none';
+
+    // Aktif buton temizle
+    document.querySelectorAll('.tab-btn')
+        .forEach(b => b.classList.remove('active'));
+
+    // Açılacak sayfa
+    if(tab === 'timeline'){
+        document.getElementById('timelinePage').style.display = 'flex';
+    }
+
+   if(tab === 'notes'){
+    document.getElementById('notesPage').style.display = 'flex';
+
+    renderNotesBoard();
+}
+    btn.classList.add('active');
+}
+
+function goTimelineTab(){
+
+    const timelineBtn =
+        document.querySelectorAll('.tab-btn')[0];
+
+    switchTab('timeline', timelineBtn);
+}
+
+function renderNotesBoard(){
+
+    const body = document.getElementById('notesGridBody');
+
+    if(!body) return;
+
+    body.innerHTML = "";
+
+    for(let ep = 1; ep <= TOTAL_EPISODES; ep++){
+
+        const epCode = "EP" + String(ep).padStart(2,"0");
+
+        const row = document.createElement('div');
+        row.className = "notes-row";
+
+        const epCell = document.createElement('div');
+        epCell.className = "notes-episode";
+        epCell.innerText = epCode;
+
+        row.appendChild(epCell);
+
+       departments.forEach(dep => {
+
+    if(!notesState[epCode]){
+        notesState[epCode] = {};
+    }
+
+    if(!notesState[epCode][dep]){
+        notesState[epCode][dep] = "";
+    }
+
+    const cell = document.createElement('div');
+    cell.style.minWidth = columnWidths[dep] + "px";
+    cell.className = "notes-cell";
+
+    const textarea = document.createElement('textarea');
+
+    textarea.className = "notes-textarea";
+
+    textarea.value = notesState[epCode][dep];
+
+    textarea.placeholder = dep.toUpperCase() + " NOTES";
+
+textarea.oninput = () => {
+
+    notesState[epCode][dep] = textarea.value;
+
+    // AUTO HEIGHT
+    textarea.style.height = "auto";
+    textarea.style.height = textarea.scrollHeight + "px";
+    textarea.style.width = "100%";
+
+    triggerAutoSave();
+};
+
+
+    // textarea -> hücre
+    cell.appendChild(textarea);
+
+    // hücre -> satır
+    row.appendChild(cell);
+
+});
+
+// SATIR -> BODY
+body.appendChild(row);
+applyGridTemplate();
+    }
+
+}
     function closeMenu() { menu.style.display = "none"; summaryPop.style.display = "none"; }
     function isWeekend(d) { return d.getDay() === 0 || d.getDay() === 6; }
     
@@ -1161,26 +1837,56 @@ let notesState = [];
         selectedCells.forEach(c => c.classList.remove("selected")); selectedCells.clear(); 
     }
 
-    function filterDept(dept, btn) {
-        if (dept === currentActiveDept && dept !== 'all') {
-            dept = 'all'; btn = document.getElementById('btn-all');
-        }
-        currentActiveDept = dept;
-        document.querySelectorAll('.dept-filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        const gridElement = document.getElementById('grid');
-        
-        if (dept === 'all') { 
-            gridElement.classList.remove('focus-mode'); 
-            gridElement.removeAttribute('data-focus');
-        } else { 
-            gridElement.classList.add('focus-mode'); 
-            gridElement.setAttribute('data-focus', dept);
-        }
-        
-        if(isVerticalActive) renderVerticalDashboard();
+   function filterDept(dept, btn) {
+
+    goTimelineTab();
+
+    if (dept === currentActiveDept &&
+        dept !== 'all') {
+
+        dept = 'all';
+
+        btn =
+            document.getElementById('btn-all');
     }
+
+    currentActiveDept = dept;
+
+    document.querySelectorAll('.dept-filter-btn')
+        .forEach(b =>
+            b.classList.remove('active')
+        );
+
+    btn.classList.add('active');
+
+    const gridElement =
+        document.getElementById('grid');
+
+    if (dept === 'all') {
+
+        gridElement.classList.remove(
+            'focus-mode'
+        );
+
+        gridElement.removeAttribute(
+            'data-focus'
+        );
+
+    } else {
+
+        gridElement.classList.add(
+            'focus-mode'
+        );
+
+        gridElement.setAttribute(
+            'data-focus',
+            dept
+        );
+    }
+
+    if(isVerticalActive)
+        renderVerticalDashboard();
+}
 
     function updateTodayLine() {
         const today = new Date(); today.setHours(0,0,0,0);
@@ -1195,14 +1901,29 @@ let notesState = [];
         }
     }
 
-    document.getElementById('toggleTodayBtn').onclick = function() {
-        const line = document.getElementById('todayLine');
-        if(line.style.display === "none" || line.style.display === "") {
-            line.style.display = "block"; this.style.background = "#1a1c23"; this.style.opacity = "1";
-        } else {
-            line.style.display = "none"; this.style.background = "#000"; this.style.opacity = "0.5";
-        }
-    };
+document.getElementById('toggleTodayBtn').onclick = function() {
+
+    goTimelineTab();
+
+    const line = document.getElementById('todayLine');
+
+    if(line.style.display === "none" || line.style.display === "") {
+
+        line.style.display = "block";
+
+        this.style.background = "#1a1c23";
+
+        this.style.opacity = "1";
+
+    } else {
+
+        line.style.display = "none";
+
+        this.style.background = "#000";
+
+        this.style.opacity = "0.5";
+    }
+};
 
 window.addEventListener('keydown', (e) => { 
     if (e.ctrlKey && e.key === 'z') { 
@@ -1226,26 +1947,7 @@ window.addEventListener('keydown', (e) => {
     } 
 });
 
-window.addNote = function() {
-    const input = document.getElementById('noteInput'); 
-    if (!input.value.trim()) return;
 
-    const now = new Date();
-    const dateStr = `${now.getDate()}/${now.getMonth() + 1} ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
-
-    const noteObj = {
-        text: input.value,
-        status: 'waiting',
-        date: dateStr
-    };
-
-notesState.unshift(noteObj);   // 1. veri
-renderNotes();                 // 2. UI
-input.value = '';              // 3. temizlik
-
-triggerAutoSave();             // 4. save ✅
-}
-    
     function triggerAutoSave() {
 
     if (autoSaveTimer) {
@@ -1266,68 +1968,7 @@ triggerAutoSave();             // 4. save ✅
 
     }, 2000);
 }
-    
 
-    function renderNotes() {
-    const noteList = document.getElementById('noteList');
-    if (!noteList) return;
-
-    noteList.innerHTML = "";
-
-    notesState.forEach((note, index) => {
-        const div = document.createElement('div');
-        div.className = `note-item ${note.status}`;
-        div.dataset.status = note.status;
-
-        div.innerHTML = `
-            <span class="note-text">${note.text}</span>
-            <span class="note-date">${note.date}</span>
-        `;
-
-        div.oncontextmenu = (e) => {
-            e.preventDefault();
-            contextTarget = div;
-            contextIndex = index; // 👈 önemli
-            showNoteMenu(e.pageX, e.pageY);
-        };
-
-        noteList.appendChild(div);
-    });
-}
-    
-function showNoteMenu(x, y) {
-    menu.innerHTML = `
-    <div class="item" onclick="updateNoteStatus('waiting')">🟠 Waiting</div>
-    <div class="item" onclick="updateNoteStatus('done')">🟢 Done</div>
-    <div class="item" onclick="updateNoteStatus('canceled')">🔴 Canceled</div>
-    <hr style="border:0; border-top:1px solid #333; margin:5px 0;">
-    <div class="item" style="color:#ff5555" onclick="deleteNote()">🗑 Delete</div>
-    `;
-    menu.style.display = "block";
-    menu.style.left = x + "px";
-    menu.style.top = y + "px";
-}
-
-window.updateNoteStatus = function(status) {
-    if (contextIndex !== null) {
-        notesState[contextIndex].status = status; // 1. veri
-        renderNotes();                            // 2. UI
-    }
-    closeMenu();
-
-    triggerAutoSave(); // ✅ 3. autosave
-}
-
-window.deleteNote = function() {
-    if (contextIndex !== null) {
-        notesState.splice(contextIndex, 1);   // 1. veri değişti
-        renderNotes();                        // 2. UI güncellendi
-        triggerAutoSave();                    // 3. save
-    }
-    closeMenu();
-}
-    
-    function filterNotes(status, btn) { document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); document.querySelectorAll('.note-item').forEach(note => note.style.display = (status === 'all' || note.dataset.status === status) ? 'flex' : 'none'); }
 
     function showDateSummary(colIdx, x, y) {
         const dateObj = dates[colIdx];
@@ -1641,21 +2282,35 @@ window.showGridMenu = function(x, y) {
     let isVerticalActive = false;
     let lastSelectedDayIdx = null; // Dikey seçim referansı
 
-    document.getElementById('toggleViewBtn').onclick = function() {
-        isVerticalActive = !isVerticalActive;
-        if (isVerticalActive) {
-            container.style.display = 'none';
-            vContainer.style.display = 'block';
-            this.textContent = "📊 TIMELINE VIEW";
-            this.style.background = "#006064";
-            renderVerticalDashboard();
-        } else {
-            container.style.display = 'block';
-            vContainer.style.display = 'none';
-            this.textContent = "🔄 CALENDAR VIEW";
-            this.style.background = "#4a148c";
-        }
-    };
+document.getElementById('toggleViewBtn').onclick = function() {
+
+    goTimelineTab();
+
+    isVerticalActive = !isVerticalActive;
+
+    if (isVerticalActive) {
+
+        container.style.display = 'none';
+
+        vContainer.style.display = 'block';
+
+        this.textContent = "📊 TIMELINE VIEW";
+
+        this.style.background = "#006064";
+
+        renderVerticalDashboard();
+
+    } else {
+
+        container.style.display = 'block';
+
+        vContainer.style.display = 'none';
+
+        this.textContent = "🔄 CALENDAR VIEW";
+
+        this.style.background = "#4a148c";
+    }
+};
 
     // Dikey modda gün seçme (Shift desteği ile)
     function toggleDaySelection(element, event) {
@@ -1803,7 +2458,74 @@ window.showGridMenu = function(x, y) {
         if (!SAVED_DATA) createCalendarAction(document.getElementById("startDate").value); 
         loadSavedData(); 
     };
-    document.addEventListener('mousedown', (e) => { if(menu.style.display === 'block' && !menu.contains(e.target)) closeMenu(); if(summaryPop.style.display === 'block' && !summaryPop.contains(e.target)) summaryPop.style.display = "none"; }, true);
+ document.addEventListener('mousedown', (e) => {
+
+    // MENU CLOSE
+    if(menu.style.display === 'block' &&
+       !menu.contains(e.target)){
+
+        closeMenu();
+    }
+
+    // SUMMARY CLOSE
+    if(summaryPop.style.display === 'block' &&
+       !summaryPop.contains(e.target)){
+
+        summaryPop.style.display = "none";
+    }
+
+    // RESIZE HANDLE
+    if(e.target.classList.contains('resize-handle')){
+
+        const header =
+            e.target.parentElement;
+
+        const dep =
+            header.dataset.dep;
+
+        const startX =
+            e.clientX;
+
+        const startWidth =
+            columnWidths[dep];
+
+        function resize(ev){
+
+            const newWidth =
+                startWidth + (ev.clientX - startX);
+
+            if(newWidth < 180) return;
+
+            columnWidths[dep] = newWidth;
+
+            applyGridTemplate();
+        }
+
+        function stopResize(){
+
+            window.removeEventListener(
+                'mousemove',
+                resize
+            );
+
+            window.removeEventListener(
+                'mouseup',
+                stopResize
+            );
+        }
+
+        window.addEventListener(
+            'mousemove',
+            resize
+        );
+
+        window.addEventListener(
+            'mouseup',
+            stopResize
+        );
+    }
+
+}, true);
 
 
 function saveProjectAsPost() {
@@ -2105,6 +2827,48 @@ function markML(col, ep) {
     }
 }
 
+document.querySelectorAll('.resize-handle')
+.forEach(handle => {
+
+    handle.addEventListener('mousedown', initResize);
+
+});
+
+function initResize(e){
+
+    const header = e.target.parentElement;
+
+    const dep = header.dataset.dep;
+
+    const startX = e.clientX;
+
+    const startWidth = header.offsetWidth;
+
+   function resize(e){
+
+    const newWidth =
+        startWidth + (e.clientX - startX);
+
+    // MIN LIMIT
+    if(newWidth < 180) return;
+
+    // WIDTH STATE
+    columnWidths[dep] = newWidth;
+
+    // TÜM GRIDİ GÜNCELLE
+    applyGridTemplate();
+}
+
+    function stopResize(){
+
+        window.removeEventListener('mousemove', resize);
+        window.removeEventListener('mouseup', stopResize);
+    }
+
+    window.addEventListener('mousemove', resize);
+    window.addEventListener('mouseup', stopResize);
+}
+
 // Sayfa tamamen yüklendiğinde butonları bağla
 document.addEventListener('DOMContentLoaded', function() {
     
@@ -2126,6 +2890,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 });
+
 
 
     
