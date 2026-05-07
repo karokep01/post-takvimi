@@ -1792,13 +1792,13 @@ function renderNotesBoard(){
 
        departments.forEach(dep => {
 
-    if(!notesState[epCode]){
-        notesState[epCode] = {};
-    }
+if(notesState[epCode] === undefined){
+    notesState[epCode] = {};
+}
 
-    if(!notesState[epCode][dep]){
-        notesState[epCode][dep] = "";
-    }
+if(notesState[epCode][dep] === undefined){
+    notesState[epCode][dep] = "";
+}
 
     const cell = document.createElement('div');
     cell.style.minWidth = columnWidths[dep] + "px";
