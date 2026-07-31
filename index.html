@@ -995,7 +995,7 @@
 
 
 
-<div id="welcomeModal" class="modal-overlay" style="display:flex;">
+<div id="welcomeModal" class="modal-overlay" style="display:none;">
  <div class="modal-content" style="max-width:380px;">
  <h3>👋 HOŞ GELDİN</h3>
  <p style="color:#bbb; font-size:13px; line-height:1.6; margin:0 0 20px;">
@@ -2446,6 +2446,9 @@ document.getElementById('toggleViewBtn').onclick = function() {
         if (!m || m.length < 3) return null;
         return m.slice(0, 3).map(n => parseInt(n).toString(16).padStart(2, '0')).join('').toUpperCase();
     }
+    function hexNoHash(hex) {
+        return hex ? hex.replace('#', '').toUpperCase() : null;
+    }
 
     document.getElementById('exportExcelBtn').onclick = () => {
         if (typeof XLSX === "undefined") {
@@ -2458,14 +2461,37 @@ document.getElementById('toggleViewBtn').onclick = function() {
         }
 
         const projName = document.getElementById("projectName").value || "PROJE";
+        const ROW_OFFSET = 2; // 0: ay satırı, 1: tarih satırı — veri satırları 2'den başlar
 
-        // Başlık satırı: EPISODE | PIPELINE | tarih1 | tarih2 ...
-        const headerRow = ["EPISODE", "PIPELINE", ...dates.map(d =>
+        // --- SATIR 0: AY BAŞLIKLARI (buildHeader() ile aynı gruplama mantığı) ---
+        const monthRow = ["EPISODE", "PIPELINE", ...dates.map(() => "")];
+        const monthMerges = [];
+        {
+            let dIdx = 0;
+            while (dIdx < dates.length) {
+                const m = dates[dIdx].getMonth();
+                let span = 0;
+                while (dIdx + span < dates.length && dates[dIdx + span].getMonth() === m) span++;
+                monthRow[2 + dIdx] = dates[dIdx].toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase();
+                if (span > 1) monthMerges.push({ s: { r: 0, c: 2 + dIdx }, e: { r: 0, c: 2 + dIdx + span - 1 } });
+                dIdx += span;
+            }
+        }
+
+        // --- SATIR 1: GÜN BAŞLIKLARI ---
+        const dateHeaderRow = ["", "", ...dates.map(d =>
             `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`
         )];
-        const aoa = [headerRow];
-        const merges = [];
+
+        const aoa = [monthRow, dateHeaderRow];
+        const merges = [
+            { s: { r: 0, c: 0 }, e: { r: 1, c: 0 } }, // EPISODE başlığı 2 satır birleşik
+            { s: { r: 0, c: 1 }, e: { r: 1, c: 1 } }, // PIPELINE başlığı 2 satır birleşik
+            ...monthMerges
+        ];
+        const weekendCols = dates.map(d => isWeekend(d));
         const styledCells = []; // {r, c, hex, text}
+        const pipelineCells = []; // {r, hex} -> PIPELINE (sütun 1) etiket rengi
 
         function buildCellValue(procType, ep) {
             const rowVals = [];
@@ -2488,6 +2514,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
             if (v && v.hex) styledCells.push({ r: rowIdx, c: colOffset + 2, hex: v.hex });
         });
         aoa.push(setRow);
+        pipelineCells.push({ r: rowIdx, hex: hexNoHash(deptColors["set"]) });
 
         // --- Her bölüm için departman satırları (procOrder rebuildGrid ile aynı sırada) ---
         const procOrder = ["edit", "cuts", "vfx", "color", "sound", "music", "send"];
@@ -2502,6 +2529,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
                     if (v && v.hex) styledCells.push({ r: rowIdx, c: colOffset + 2, hex: v.hex });
                 });
                 aoa.push(row);
+                pipelineCells.push({ r: rowIdx, hex: hexNoHash(deptColors[proc]) });
             });
             // Bölüm etiketini (EPISODE 01 vb.) dikeyde birleştir (merge)
             merges.push({ s: { r: rowIdx - procOrder.length + 1, c: 0 }, e: { r: rowIdx, c: 0 } });
@@ -2512,13 +2540,52 @@ document.getElementById('toggleViewBtn').onclick = function() {
         // Sütun genişlikleri: EPISODE / PIPELINE sabit, tarihler dar
         ws['!cols'] = [{ wch: 14 }, { wch: 10 }, ...dates.map(() => ({ wch: 6 }))];
 
-        // Başlık satırını kalın yap
-        for (let c = 0; c < headerRow.length; c++) {
-            const ref = XLSX.utils.encode_cell({ r: 0, c });
-            if (ws[ref]) ws[ref].s = { font: { bold: true }, fill: { fgColor: { rgb: "1C1F26" } }, alignment: { horizontal: "center" } };
+        const totalRows = aoa.length;
+
+        // Başlık satırları (ay + gün): koyu zemin + BEYAZ yazı (görünmez olmasın diye),
+        // hafta sonu sütunları gri (timeline'daki hafta sonu rengiyle aynı: #D1D1D1)
+        for (let r = 0; r <= 1; r++) {
+            for (let c = 0; c < aoa[0].length; c++) {
+                const ref = XLSX.utils.encode_cell({ r, c });
+                if (!ws[ref]) continue;
+                const isWeekendCol = c >= 2 && weekendCols[c - 2];
+                ws[ref].s = {
+                    font: { bold: true, color: { rgb: isWeekendCol ? "000000" : "FFFFFF" } },
+                    fill: { fgColor: { rgb: isWeekendCol ? "D1D1D1" : "1C1F26" } },
+                    alignment: { horizontal: "center", vertical: "center" }
+                };
+            }
         }
 
-        // Dolu hücrelere gerçek arkaplan rengini uygula
+        // EPISODE (sütun 0) etiket rengi — timeline'daki gibi yeşil
+        for (let r = ROW_OFFSET; r < totalRows; r++) {
+            const ref = XLSX.utils.encode_cell({ r, c: 0 });
+            if (ws[ref] && ws[ref].v) {
+                ws[ref].s = { font: { bold: true }, fill: { fgColor: { rgb: "6FBF73" } }, alignment: { horizontal: "center", vertical: "center" } };
+            }
+        }
+
+        // PIPELINE (sütun 1) etiket renkleri — departman rengiyle aynı
+        pipelineCells.forEach(({ r, hex }) => {
+            const ref = XLSX.utils.encode_cell({ r, c: 1 });
+            if (ws[ref] && hex) {
+                ws[ref].s = { font: { bold: true }, fill: { fgColor: { rgb: hex } }, alignment: { horizontal: "left", vertical: "center" } };
+            }
+        });
+
+        // Boş (dolu olmayan) hafta sonu hücrelerini gri boya (timeline ile birebir)
+        for (let r = ROW_OFFSET; r < totalRows; r++) {
+            for (let c = 2; c < aoa[0].length; c++) {
+                if (weekendCols[c - 2]) {
+                    const ref = XLSX.utils.encode_cell({ r, c });
+                    if (ws[ref] && !ws[ref].s) {
+                        ws[ref].s = { fill: { fgColor: { rgb: "D1D1D1" } } };
+                    }
+                }
+            }
+        }
+
+        // Dolu hücrelere gerçek arkaplan rengini uygula (hafta sonu grisinin üzerine yazar)
         styledCells.forEach(({ r, c, hex }) => {
             const ref = XLSX.utils.encode_cell({ r, c });
             if (ws[ref]) {
