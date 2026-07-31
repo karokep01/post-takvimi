@@ -2645,7 +2645,16 @@ document.getElementById('toggleViewBtn').onclick = function() {
                 const isToday = cur.toDateString() === new Date().toDateString();
                 const fullDateLabel = cur.toLocaleDateString('en-US', { day: 'numeric', month: 'long', weekday: 'long' });
 
-                html += `<div class="cal-day-cell ${isToday ? 'today-cell' : ''}" data-col-idx="${colIdx}" onclick="toggleDaySelection(this, event)">
+                // ⚠️ Proje başlangıç tarihinden ÖNCEKİ günler timeline grid'inde bir
+                // sütuna karşılık gelmiyor (grid 0'dan, yani başlangıç tarihinden başlıyor).
+                // Bu günleri "other-month" gibi soluk/pasif gösteriyoruz ki sağ tıklayıp
+                // ekleme yapmaya çalışıldığında "eklenmiyor" gibi görünen kafa karışıklığı olmasın.
+                if (colIdx < 0) {
+                    html += `<div class="cal-day-cell other-month" title="${fullDateLabel} — proje başlangıcından önce, buraya kayıt eklenemez"><div class="day-num">${fullDateLabel}</div></div>`;
+                    continue;
+                }
+
+                html += `<div class="cal-day-cell ${isToday ? 'today-cell' : ''}" data-col-idx="${colIdx}" onclick="toggleDaySelection(this, event)" oncontextmenu="showCalendarAddMenu(event, ${colIdx}); return false;">
                             <div class="day-num">${fullDateLabel}</div>`;
  
                 if (groups[colIdx]) {
@@ -2660,6 +2669,89 @@ document.getElementById('toggleViewBtn').onclick = function() {
             tempDate.setMonth(tempDate.getMonth() + 1);
         }
         vContainer.innerHTML = html;
+    }
+
+    // --- CALENDAR MODU: SAĞ TIK İLE PIPELINE EKLEME ---
+    // Kullanıcı lineer sırayla ilerlemek zorunda kalmadan, takvimde herhangi bir
+    // güne sağ tıklayıp doğrudan bir departman/pipeline girdisi ekleyebilir.
+    // Bu, arka planda paylaşılan aynı timeline grid hücresini doldurduğu için
+    // lineer (Timeline) görünüme geçildiğinde eklenen kayıt orada da görünür.
+    const calendarAddableProcs = [
+        { key: "set", label: "SET" },
+        { key: "edit", label: "EDIT" },
+        { key: "cuts", label: "CUTS" },
+        { key: "vfx", label: "VFX" },
+        { key: "color", label: "COLOR" },
+        { key: "sound", label: "SOUND" },
+        { key: "music", label: "MUSIC" },
+        { key: "send", label: "SEND" }
+    ];
+
+    window.showCalendarAddMenu = function(e, colIdx) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        menu.innerHTML = calendarAddableProcs.map(p =>
+            `<div class="item cal-add-item" data-proc="${p.key}">
+                <span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${deptColors[p.key]};margin-right:7px;"></span>${p.label} ekle
+            </div>`
+        ).join("");
+
+        menu.style.display = "block";
+        menu.style.left = e.pageX + "px";
+        menu.style.top = e.pageY + "px";
+
+        menu.querySelectorAll('.cal-add-item').forEach(item => {
+            item.onclick = () => {
+                closeMenu();
+                addCalendarPipelineItem(colIdx, item.dataset.proc);
+            };
+        });
+    };
+
+    function addCalendarPipelineItem(colIdx, proc) {
+        if (colIdx < 0 || colIdx >= TOTAL_DAYS) {
+            alert("Bu tarih mevcut takvim aralığının dışında.");
+            return;
+        }
+
+        let ep = 0;
+        if (proc !== "set") {
+            const epInput = prompt(`Hangi bölüm (episode) için? (1 - ${TOTAL_EPISODES})`, "1");
+            if (epInput === null) return; // vazgeçildi
+            ep = parseInt(epInput);
+            if (isNaN(ep) || ep < 1 || ep > TOTAL_EPISODES) {
+                alert(`Lütfen 1 ile ${TOTAL_EPISODES} arasında geçerli bir bölüm numarası girin.`);
+                return;
+            }
+        }
+
+        const target = document.querySelector(`.cell.timeline[data-col="${colIdx}"][data-ep="${ep}"][data-proc_type="${proc}"]`);
+        if (!target) {
+            alert("Bu satır/sütun kombinasyonu takvimde bulunamadı.");
+            return;
+        }
+
+        let label = proc.toUpperCase();
+        if (target.classList.contains('filled')) {
+            const ok = confirm(`Bu hücrede zaten "${target.textContent}" var. Üzerine yazmak ister misiniz?`);
+            if (!ok) return;
+        }
+        const text = prompt("Hücre içeriği:", label);
+        if (text === null) return; // vazgeçildi
+        label = text.trim() === "" ? proc.toUpperCase() : text;
+
+        target.dataset.proc = proc;
+        target.textContent = label;
+        target.style.backgroundColor = deptColors[proc];
+        target.classList.add("filled");
+
+        saveHistory();
+        triggerAutoSave();
+
+        // ✅ Lineer görünümde de aynı hücre zaten dolduğu için, calendar/dikey
+        // görünümü yeniden çizerek eklenen kaydı burada da hemen gösteriyoruz.
+        renderVerticalDashboard();
     }
 
     window.onload = () => { 
