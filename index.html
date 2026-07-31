@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>Post Prodüksiyon Takvimi</title>
+ <meta charset="UTF-8">
+ <title>Post Prodüksiyon Takvimi</title>
 
-    
+ 
 <body>
-    <style>
+ <style>
         :root {
             --bg-dark: #0F1115;
             --bg-panel: #15171c;
@@ -27,7 +27,7 @@
             overflow: hidden; display: flex; flex-direction: column; height: 100vh;
         }
 
-   
+ 
 /* Üst Bar Tasarımı */
 .top-bar {
     padding: 8px 15px;
@@ -99,7 +99,7 @@
             align-items: center;
         }
         .filter-label { font-size: 11px; color: #555; font-weight: bold; margin-right: 5px; letter-spacing: 1px; }
-        
+ 
         .dept-filter-btn { 
             padding: 5px 12px; font-size: 11px; border: 1px solid #333; 
             background: #1a1c23; color: #999; cursor: pointer; border-radius: 20px; 
@@ -133,7 +133,7 @@
     cursor: pointer; 
     user-select: none; 
     position: relative;
-    
+ 
     /* EXCEL WRAP TEXT MANTIĞI */
     display: flex;
     align-items: center;
@@ -156,7 +156,7 @@
     justify-content: center;
     text-align: center;
     padding: 1px 2px;
-    
+ 
     white-space: normal !important;   /* Satır atlamaya izin ver */
     word-break: normal !important;    /* KELİMEYİ ASLA BÖLME (N aşağı düşmez) */
     overflow: hidden;                 /* Yine de sığmazsa dışarı taşırma */
@@ -164,7 +164,7 @@
     font-weight: 800;
 }
         #grid { will-change: contents; }
-        
+ 
         .focus-mode .cell.timeline, 
         .focus-mode .cell.sticky-col-2, 
         .focus-mode .cell.sticky-col-1, 
@@ -189,7 +189,7 @@
 
         .header { position: sticky; top: 0; z-index: 2000; }
         .header .sticky-col-1, .header .sticky-col-2 { z-index: 2500 !important; top: 0; }
-        
+ 
         .month { background: #000 !important; color: #FFFFFF !important; z-index: 1001; position: sticky; top: 0; text-align: center; border-right: 1px solid var(--accent) !important; font-size: 14px; font-weight: bold; width: auto !important; }
         .date { background: rgba(42, 45, 51, 0.75) !important; color: #FFFFFF !important; z-index: 1001; position: sticky; top: 30px; backdrop-filter: blur(4px); }
         .active-date { background-color: var(--neon-green) !important; color: #000 !important; font-weight: bold; }
@@ -216,7 +216,7 @@
         .filled { z-index: 5 !important; color: #000000 !important; font-weight: bold; cursor: grab; }
         .filled:active { cursor: grabbing; }
         .selected { outline: 2px solid #0078d7 !important; z-index: 10 !important; box-shadow: 0 0 8px rgba(0, 120, 215, 0.5); }
-        
+ 
         .episode-v { background: #6FBF73 !important; color: #000 !important; display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; transform: rotate(180deg); font-size: 12px; height: 100% !important; border-right: 1px solid var(--border-color); }
         .divider { height: 12px; background: #000; grid-column: 1 / -1; }
 
@@ -252,7 +252,7 @@
         #verticalViewContainer * {
             box-sizing: border-box !important;
         }
-     
+ 
         #verticalViewContainer {
             display: none; 
             flex: 1; 
@@ -295,7 +295,7 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        
+ 
         .cal-day-cell.selected-day {
             border: 2px solid var(--accent) !important;
             background: rgba(255, 0, 0, 0.08);
@@ -921,72 +921,72 @@
     text-transform:uppercase;
 }
 
-    </style>
+ </style>
 </head>
 <body>
 
 <div class="top-bar">
-    <input type="text" id="projectName" class="project-input" placeholder="PROJECT NAME...">
-    
-    <button id="openModalBtn" class="nav-btn nav-btn-primary"><span>📅</span> SET START DATE</button>
-    <button id="toggleTodayBtn" class="nav-btn"><span>📍</span> TODAY LINE</button>
-    <button id="toggleViewBtn" class="nav-btn"><span>🔄</span> CALENDAR VIEW</button>
-    <button id="openAutoModalBtn" class="nav-btn" style="background: #2a2d35 !important; border-color: var(--neon-green) !important;"><span>🤖</span> AUTO SCHEDULE</button>
+ <input type="text" id="projectName" class="project-input" placeholder="PROJECT NAME...">
+ 
+ <button id="openModalBtn" class="nav-btn nav-btn-primary"><span>📅</span> SET START DATE</button>
+ <button id="toggleTodayBtn" class="nav-btn"><span>📍</span> TODAY LINE</button>
+ <button id="toggleViewBtn" class="nav-btn"><span>🔄</span> CALENDAR VIEW</button>
+ <button id="openAutoModalBtn" class="nav-btn" style="background: #2a2d35 !important; border-color: var(--neon-green) !important;"><span>🤖</span> AUTO SCHEDULE</button>
 
-    <div class="nav-spacer"></div>
+ <div class="nav-spacer"></div>
 
-    <div id="userMenuWrapper" style="position:relative; display:none;">
-        <div id="userBox" style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="toggleUserDropdown()">
-            <img id="userPhoto" style="width:30px; height:30px; border-radius:50%; border:1px solid #555;">
-            <span id="userName" style="font-size:12px; font-weight:bold;"></span>
-        </div>
-          <div id="userDropdown" style="display:none; position:absolute; top:40px; right:0; background:#1c1f26; border:1px solid #444; border-radius:6px; min-width:180px; z-index:9999; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
-            <div class="item" onclick="switchAccount()" style="padding:10px; cursor:pointer; border-bottom:1px solid #333;">🔄 Switch Account</div>
-            <div class="item" onclick="logout()" style="padding:10px; cursor:pointer; color:#ff5555;">🚪 log Out</div>
-        </div>
-    </div>
+ <div id="userMenuWrapper" style="position:relative; display:none;">
+ <div id="userBox" style="display:flex; align-items:center; gap:8px; cursor:pointer;" onclick="toggleUserDropdown()">
+ <img id="userPhoto" style="width:30px; height:30px; border-radius:50%; border:1px solid #555;">
+ <span id="userName" style="font-size:12px; font-weight:bold;"></span>
+ </div>
+ <div id="userDropdown" style="display:none; position:absolute; top:40px; right:0; background:#1c1f26; border:1px solid #444; border-radius:6px; min-width:180px; z-index:9999; box-shadow: 0 10px 20px rgba(0,0,0,0.5);">
+ <div class="item" onclick="switchAccount()" style="padding:10px; cursor:pointer; border-bottom:1px solid #333;">🔄 Switch Account</div>
+ <div class="item" onclick="logout()" style="padding:10px; cursor:pointer; color:#ff5555;">🚪 log Out</div>
+ </div>
+ </div>
 
-    <button id="saveBtn" class="nav-btn">
-    <span>💾</span> SAVE
+ <button id="saveBtn" class="nav-btn">
+ <span>💾</span> SAVE
 </button>
 
-    <button onclick="handleLoadAction()" class="nav-btn"><span>📂</span> LOAD</button>
-    
-    <button id="exportVerticalBtn" class="nav-btn"><span>📄</span> VERTICAL VIEW</button>
-  <button id="googleLoginBtn" onclick="loginWithGoogle()" class="nav-btn" style="border-color: #4285F4;">
+ <button onclick="handleLoadAction()" class="nav-btn"><span>📂</span> LOAD</button>
+ 
+ <button id="exportVerticalBtn" class="nav-btn"><span>📄</span> VERTICAL VIEW</button>
+ <button id="googleLoginBtn" onclick="loginWithGoogle()" class="nav-btn" style="border-color: #4285F4;">
         ⚡Log In
-    </button>
-                                   
+ </button>
+ 
 </div>
 
 <div id="projectsPanel" class="modal-overlay" style="display:none;">
-    <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
-        
-        <h3 style="color:var(--neon-green)">📁 MY PROJECTS</h3>
-        
-        <div id="projectsList" style="text-align: left; margin: 20px 0;"></div>
+ <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+ 
+ <h3 style="color:var(--neon-green)">📁 MY PROJECTS</h3>
+ 
+ <div id="projectsList" style="text-align: left; margin: 20px 0;"></div>
 
-        <!-- BUTONLAR -->
-        <div style="display:flex; gap:10px; justify-content:center;">
+ <!-- BUTONLAR -->
+ <div style="display:flex; gap:10px; justify-content:center;">
 
-            <button id="deleteAllProjectsBtn" 
-                class="modal-btn btn-cancel" 
-                style="background:#ff3333; color:white;">
+ <button id="deleteAllProjectsBtn" 
+ class="modal-btn btn-cancel" 
+ style="background:#ff3333; color:white;">
                 🗑 DELETE ALL
-            </button>
+ </button>
 
-            <button onclick="document.getElementById('projectsPanel').style.display='none'" 
-                class="modal-btn btn-cancel">
+ <button onclick="document.getElementById('projectsPanel').style.display='none'" 
+ class="modal-btn btn-cancel">
                 CLOSE
-            </button>
+ </button>
 
-        </div>
+ </div>
 
-    </div>
+ </div>
 </div>
 
-    
-    
+ 
+ 
 </button>
 
 </div>
@@ -994,100 +994,100 @@
 
 
 <div id="dateModal" class="modal-overlay">
-    <div class="modal-content">
-        <h3>SELECT START DATE</h3>
-        <input type="date" id="startDate" class="modal-input" onclick="if(this.showPicker) this.showPicker()">
-        <div class="modal-buttons">
-            <button id="confirmDateBtn" class="modal-btn btn-confirm">APPLY</button>
-            <button id="closeModalBtn" class="modal-btn btn-cancel">CANCEL</button>
-        </div>
-    </div>
+ <div class="modal-content">
+ <h3>SELECT START DATE</h3>
+ <input type="date" id="startDate" class="modal-input" onclick="if(this.showPicker) this.showPicker()">
+ <div class="modal-buttons">
+ <button id="confirmDateBtn" class="modal-btn btn-confirm">APPLY</button>
+ <button id="closeModalBtn" class="modal-btn btn-cancel">CANCEL</button>
+ </div>
+ </div>
 </div>
 
 <div class="filter-bar" id="deptFilters">
-    <div class="filter-label">FOCUS MODE:</div>
-    <button class="dept-filter-btn active" id="btn-all" onclick="filterDept('all', this)"><span>🌐</span> ALL</button>
-    <button class="dept-filter-btn" onclick="filterDept('set', this)"><span>🎬</span> SET</button>
-    <button class="dept-filter-btn" onclick="filterDept('edit', this)"><span>✂️</span> EDIT</button>
-    <button class="dept-filter-btn" onclick="filterDept('cuts', this)"><span>🎞️</span> CUTS</button>
-    <button class="dept-filter-btn" onclick="filterDept('vfx', this)"><span>🎆</span> VFX</button>
-    <button class="dept-filter-btn" onclick="filterDept('color', this)"><span>🎨</span> COLOR</button>
-    <button class="dept-filter-btn" onclick="filterDept('sound', this)"><span>🔊</span> SOUND</button>
-    <button class="dept-filter-btn" onclick="filterDept('music', this)"><span>🎵</span> MUSIC</button>
-    <button class="dept-filter-btn" onclick="filterDept('send', this)"><span>📦</span> SEND</button>
+ <div class="filter-label">FOCUS MODE:</div>
+ <button class="dept-filter-btn active" id="btn-all" onclick="filterDept('all', this)"><span>🌐</span> ALL</button>
+ <button class="dept-filter-btn" onclick="filterDept('set', this)"><span>🎬</span> SET</button>
+ <button class="dept-filter-btn" onclick="filterDept('edit', this)"><span>✂️</span> EDIT</button>
+ <button class="dept-filter-btn" onclick="filterDept('cuts', this)"><span>🎞️</span> CUTS</button>
+ <button class="dept-filter-btn" onclick="filterDept('vfx', this)"><span>🎆</span> VFX</button>
+ <button class="dept-filter-btn" onclick="filterDept('color', this)"><span>🎨</span> COLOR</button>
+ <button class="dept-filter-btn" onclick="filterDept('sound', this)"><span>🔊</span> SOUND</button>
+ <button class="dept-filter-btn" onclick="filterDept('music', this)"><span>🎵</span> MUSIC</button>
+ <button class="dept-filter-btn" onclick="filterDept('send', this)"><span>📦</span> SEND</button>
 </div>
 
 <div id="dateSummaryPop" class="date-summary-pop"></div>
 
 <div class="main-layout">
 
-    <!-- TIMELINE PAGE -->
-    <div id="timelinePage" class="tab-page active">
+ <!-- TIMELINE PAGE -->
+ <div id="timelinePage" class="tab-page active">
 
-        <div class="container" id="mainContainer">
-            <div id="selection-box"></div>
-            <div id="todayLine" class="today-line"></div>
-            <div class="header" id="header"></div>
-            <div class="grid" id="grid"></div>
-        </div>
+ <div class="container" id="mainContainer">
+ <div id="selection-box"></div>
+ <div id="todayLine" class="today-line"></div>
+ <div class="header" id="header"></div>
+ <div class="grid" id="grid"></div>
+ </div>
 
-        <div id="verticalViewContainer"></div>
+ <div id="verticalViewContainer"></div>
 
-    </div>
+ </div>
 
 
 <!-- NOTES PAGE -->
 <div id="notesPage" class="tab-page">
 
-    <div class="notes-board">
+ <div class="notes-board">
 
-        <!-- HEADER -->
-        <div class="notes-grid-header">
+ <!-- HEADER -->
+ <div class="notes-grid-header">
 
-            <div class="notes-ep-col header-cell">
+ <div class="notes-ep-col header-cell">
                 EPISODES
-            </div>
+ </div>
 
-       <div class="notes-dept header-cell" data-dep="edit">
+ <div class="notes-dept header-cell" data-dep="edit">
     🎬 EDIT
-    <div class="resize-handle"></div>
+ <div class="resize-handle"></div>
 </div>
 
 <div class="notes-dept header-cell" data-dep="cuts">
     ✂ CUTS
-    <div class="resize-handle"></div>
+ <div class="resize-handle"></div>
 </div>
 
 <div class="notes-dept header-cell" data-dep="vfx">
     ✨ VFX
-    <div class="resize-handle"></div>
+ <div class="resize-handle"></div>
 </div>
 
 <div class="notes-dept header-cell" data-dep="color">
     🎨 COLOR
-    <div class="resize-handle"></div>
+ <div class="resize-handle"></div>
 </div>
 
 <div class="notes-dept header-cell" data-dep="sound">
     🔊 SOUND
-    <div class="resize-handle"></div>
+ <div class="resize-handle"></div>
 </div>
 
 <div class="notes-dept header-cell" data-dep="music">
     🎵 MUSIC
-    <div class="resize-handle"></div>
+ <div class="resize-handle"></div>
 </div>
 
 <div class="notes-dept header-cell" data-dep="send">
     📦 SEND
-    <div class="resize-handle"></div>
+ <div class="resize-handle"></div>
 </div>
 
-        </div>
+ </div>
 
-        <div id="notesGridBody"></div>
+ <div id="notesGridBody"></div>
 
-    </div>
+ </div>
 
 </div>
 
@@ -1098,15 +1098,15 @@
 <!-- ALT TAB BAR -->
 <div class="bottom-tabs">
 
-    <button class="tab-btn active"
-            onclick="switchTab('timeline', this)">
+ <button class="tab-btn active"
+ onclick="switchTab('timeline', this)">
         TIMELINE
-    </button>
+ </button>
 
-    <button class="tab-btn"
-            onclick="switchTab('notes', this)">
+ <button class="tab-btn"
+ onclick="switchTab('notes', this)">
         NOTES
-    </button>
+ </button>
 
 </div>
 
@@ -1114,61 +1114,61 @@
 <div id="contextMenu" class="context-menu"></div>
 
 <div id="autoSetupModal" class="modal">
-    <div class="modal-content">
-        <h2 class="modal-title">AUTO SCHEDULER ⭐</h2>
-        <div class="modal-divider"></div>
+ <div class="modal-content">
+ <h2 class="modal-title">AUTO SCHEDULER ⭐</h2>
+ <div class="modal-divider"></div>
 
-        <div class="setup-grid">
-            <div class="input-group full-width">
-                <label>SET START DATE</label>
-                <input type="date" id="autoSetStart">
-            </div>
-            <div class="input-group full-width">
-                <label>TOTAL EPISODES</label>
-                <input type="number" id="autoEpCount" placeholder="Örn: 13">
-            </div>
+ <div class="setup-grid">
+ <div class="input-group full-width">
+ <label>SET START DATE</label>
+ <input type="date" id="autoSetStart">
+ </div>
+ <div class="input-group full-width">
+ <label>TOTAL EPISODES</label>
+ <input type="number" id="autoEpCount" placeholder="Örn: 13">
+ </div>
 
-            <div class="section-subtitle">PROCESS DURATIONS (PER EPISODE)</div>
+ <div class="section-subtitle">PROCESS DURATIONS (PER EPISODE)</div>
 
-            <div class="input-group">
-                <label>SET DAYS</label>
-                <input type="number" id="dSet" placeholder="0">
-            </div>
-            <div class="input-group">
-                <label>EDIT DAYS</label>
-                <input type="number" id="dEdit" placeholder="0">
-            </div>
-            <div class="input-group">
-                <label>DIRECTOR DAYS</label>
-                <input type="number" id="dCuts" placeholder="0">
-            </div>
-            <div class="input-group">
-                <label>VFX DAYS</label>
-                <input type="number" id="dVfx" placeholder="0">
-            </div>
-            <div class="input-group">
-                <label>COLOR DAYS</label>
-                <input type="number" id="dColor" placeholder="0">
-            </div>
-            <div class="input-group">
-                <label>MUSIC DAYS</label>
-                <input type="number" id="dMusic" placeholder="0">
-            </div>
-            <div class="input-group">
-                <label>MIX DAYS</label>
-                <input type="number" id="dMix" placeholder="0">
-            </div>
-            <div class="input-group">
-                <label>SEND OFSET</label>
-                <input type="number" id="offsetSend" placeholder="0">
-            </div>
-        </div>
+ <div class="input-group">
+ <label>SET DAYS</label>
+ <input type="number" id="dSet" placeholder="0">
+ </div>
+ <div class="input-group">
+ <label>EDIT DAYS</label>
+ <input type="number" id="dEdit" placeholder="0">
+ </div>
+ <div class="input-group">
+ <label>DIRECTOR DAYS</label>
+ <input type="number" id="dCuts" placeholder="0">
+ </div>
+ <div class="input-group">
+ <label>VFX DAYS</label>
+ <input type="number" id="dVfx" placeholder="0">
+ </div>
+ <div class="input-group">
+ <label>COLOR DAYS</label>
+ <input type="number" id="dColor" placeholder="0">
+ </div>
+ <div class="input-group">
+ <label>MUSIC DAYS</label>
+ <input type="number" id="dMusic" placeholder="0">
+ </div>
+ <div class="input-group">
+ <label>MIX DAYS</label>
+ <input type="number" id="dMix" placeholder="0">
+ </div>
+ <div class="input-group">
+ <label>SEND OFSET</label>
+ <input type="number" id="offsetSend" placeholder="0">
+ </div>
+ </div>
 
-        <div class="modal-footer">
-            <button id="runAutoSetupBtn" class="main-btn">GENERATE SCHEDULE</button>
-            <button id="closeAutoModalBtn" class="cancel-btn">CANCEL</button>
-        </div>
-    </div>
+ <div class="modal-footer">
+ <button id="runAutoSetupBtn" class="main-btn">GENERATE SCHEDULE</button>
+ <button id="closeAutoModalBtn" class="cancel-btn">CANCEL</button>
+ </div>
+ </div>
 </div>
 
 
@@ -1193,6 +1193,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+// Kullanıcı tarafından girilen metinleri innerHTML içine basmadan önce kaçışlamak için
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = String(str ?? "");
+    return div.innerHTML;
+}
 
 // GLOBAL FONKSİYONLAR
 window.toggleUserDropdown = () => {
@@ -1327,14 +1334,14 @@ const data = {
         alert("Save error: " + e.message); 
     }
 };
-    
+ 
 // --- YÜKLEME VE LİSTELEME (SAĞ TIK DESTEKLİ) ---
 window.handleLoadAction = async () => {
     if (!auth || !auth.currentUser) { 
         alert("⚠️ Giriş yapın."); 
         return; 
     }
-    
+ 
     const panel = document.getElementById("projectsPanel");
     const list = document.getElementById("projectsList");
     panel.style.display = "flex";
@@ -1367,10 +1374,10 @@ window.handleLoadAction = async () => {
         const div = document.createElement("div");
         div.className = "nav-btn project-item";
         div.style = "margin-bottom:10px; width:100%; display:flex; justify-content: space-between; padding:15px; font-size:14px; cursor:pointer; background:#1c1f26; border:1px solid #333; border-radius:6px;";
-        
+ 
         const dateDisplay = d.lastUpdated ? new Date(d.lastUpdated).toLocaleDateString('en-US') : 'No date';
-        div.innerHTML = `<span>📂 ${d.projectName}</span> <small>${dateDisplay}</small>`;
-        
+        div.innerHTML = `<span>📂 ${escapeHtml(d.projectName)}</span> <small>${escapeHtml(dateDisplay)}</small>`;
+ 
         div.onclick = () => {
             currentProjectId = projectId; // 🔥 EN KRİTİK SATIR
             console.log("LOADED PROJECT:", currentProjectId);
@@ -1378,7 +1385,7 @@ window.handleLoadAction = async () => {
             loadProjectToUI(d);
             panel.style.display = "none";
         };
-        
+ 
         if(window.setupRightClick) window.setupRightClick(div, projectId);
 
         list.appendChild(div);
@@ -1386,30 +1393,6 @@ window.handleLoadAction = async () => {
 };
 
 // --- SAĞ TIK SİLME MANTIĞI ---
-window.setupRightClick = function(element, projectId) {
-    element.oncontextmenu = function(e) {
-        e.preventDefault();
-        window.projectToDelete = projectId; // Global değişkene proje ID'sini ata
-        const menu = document.getElementById('projectContextMenu');
-        menu.style.display = 'block';
-        menu.style.left = e.pageX + 'px';
-        menu.style.top = e.pageY + 'px';
-    };
-};
-
-// SİLME BUTONU AKSİYONU
-document.getElementById('deleteProjectBtn').onclick = async () => {
-    if (!window.projectToDelete || !auth.currentUser) return;
-    if (confirm(`"${window.projectToDelete}" projesini kalıcı olarak silmek istiyor musunuz?`)) {
-        try {
-            await deleteDoc(doc(db, "users", auth.currentUser.uid, "projects", window.projectToDelete));
-            alert("Project deleted successfully");
-            window.handleLoadAction(); // Listeyi yenile
-        } catch (e) { alert("Delete error: " + e.message); }
-    }
-};
-
-
 function loadProjectToUI(data) {
 
     document.getElementById("projectName").value =
@@ -1451,7 +1434,7 @@ function loadProjectToUI(data) {
 
     }, 600);
 }
-    
+ 
 // GİRİŞ DURUMU TAKİBİ
 onAuthStateChanged(auth, (user) => {
     const loginBtn = document.getElementById("googleLoginBtn");
@@ -1464,8 +1447,8 @@ onAuthStateChanged(auth, (user) => {
         if (loginBtn) loginBtn.style.display = "none";
         if (userWrapper) userWrapper.style.display = "flex";
         if (userName) userName.textContent = user.displayName;
-        if (userPhoto) userPhoto.src = user.photoURL || 'varsayilan-profil-resmi-url'; 
-        
+        if (userPhoto) userPhoto.src = user.photoURL || "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32"><circle cx="12" cy="12" r="12" fill="#333"/><circle cx="12" cy="9" r="4" fill="#aaa"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6" fill="#aaa"/></svg>'); 
+ 
         console.log("Kullanıcı aktif:", user.email);
     } else {
         // Çıkış yapılmışsa
@@ -1490,12 +1473,12 @@ document.addEventListener('click', function(event) {
     });
 
     // Proje listesi oluşturulurken her satıra sağ tık olayı ekle
-window.setupRightClick = function(element, projectName) {
+window.setupRightClick = function(element, projectId) {
     element.oncontextmenu = function(e) {
         e.preventDefault();
         const menu = document.getElementById('projectContextMenu');
-        window.projectToDelete = projectName; // Silinecek projeyi hafızaya al
-        
+        window.projectToDelete = projectId; // Silinecek projenin ID'sini hafızaya al
+
         menu.style.display = 'block';
         menu.style.left = e.clientX + 'px';
         menu.style.top = e.clientY + 'px';
@@ -1512,10 +1495,10 @@ document.getElementById('deleteProjectBtn').onclick = async () => {
             // Firestore yolu: users -> UID -> projects -> ProjeAdı
             const docRef = doc(db, "users", auth.currentUser.uid, "projects", window.projectToDelete);
             await deleteDoc(docRef);
-            
+ 
             alert("Proje başarıyla silindi.");
             document.getElementById('projectContextMenu').style.display = 'none';
-            
+ 
             // Listeyi yenilemek için yükle penceresini tekrar tetikle
             window.handleLoadAction(); 
         } catch (error) {
@@ -1568,12 +1551,10 @@ document.addEventListener("DOMContentLoaded", () => {
         alert("Silme hatası: " + e.message);
     }
 };
-    
+ 
 </script> 
-    <script>
+ <script>
 
-
-    const SAVED_DATA = null;
 
 let autoSaveTimer = null;
 let isSaving = false;
@@ -1581,6 +1562,7 @@ let isSaving = false;
 let TOTAL_DAYS = 365, TOTAL_EPISODES = 16, dates = [], selectedCells = new Set(), dragSource = null, contextTarget = null, isSelecting = false, startX, startY;
 let currentActiveDept = 'all'; 
 let notesState = {};
+let contextIndex = null;
 
 let columnWidths = {
     episode: 120,
@@ -1835,13 +1817,12 @@ textarea.oninput = () => {
 
 // SATIR -> BODY
 body.appendChild(row);
-applyGridTemplate();
     }
 
+applyGridTemplate();
 }
-    function closeMenu() { menu.style.display = "none"; summaryPop.style.display = "none"; }
     function isWeekend(d) { return d.getDay() === 0 || d.getDay() === 6; }
-    
+ 
     function clearActiveSelection() { 
         document.querySelectorAll('.active-date, .highlight-column').forEach(el => el.classList.remove('active-date', 'highlight-column')); 
         selectedCells.forEach(c => c.classList.remove("selected")); selectedCells.clear(); 
@@ -1942,7 +1923,7 @@ window.addEventListener('keydown', (e) => {
     }
 
     if ((e.key === "Delete" || e.key === "Backspace") && selectedCells.size > 0 && document.activeElement.tagName !== 'INPUT') { 
-        
+ 
         selectedCells.forEach(cell => { 
             cell.dataset.proc = ""; 
             cell.textContent = ""; 
@@ -1991,14 +1972,15 @@ window.addEventListener('keydown', (e) => {
 
     function closeMenu() {
     menu.style.display = "none";
-    contextIndex = null; // 👈 ekle
+    summaryPop.style.display = "none";
+    contextIndex = null;
 }
 
 function buildHeader() {
     const header = document.getElementById("header"); header.innerHTML = "";
     header.style.gridTemplateColumns = `var(--sticky-1) var(--sticky-2) repeat(${TOTAL_DAYS}, var(--cell-width))`;
     header.innerHTML += `<div class="cell sticky-col-1 month" style="height:60px; grid-row: span 2">EPISODE</div><div class="cell sticky-col-2 month" style="height:60px; grid-row: span 2">PIPELINE</div>`;
-    
+ 
     let currentMonth = -1, months = [], span = 0;
     dates.forEach((d, i) => { 
         if (d.getMonth() !== currentMonth) { 
@@ -2020,7 +2002,7 @@ function buildHeader() {
         // Gün ismini kısa formatta ekliyoruz (Pzt, Sal...)
         const dayName = d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
         dCell.innerHTML = `<div style="line-height:1.2; padding-top:2px;">${d.getDate()}/${d.getMonth()+1}<br><span style="font-size:8px; opacity:0.7;">${dayName}</span></div>`; 
-        
+ 
         dCell.dataset.col = i;
         dCell.onclick = (e) => { 
             e.stopPropagation(); if (!e.shiftKey) clearActiveSelection(); 
@@ -2077,7 +2059,7 @@ function attachGridEvents(cell, proc, colIndex, episodeNum) {
         triggerAutoSave(); // 🔥 BU YOKSA AUTOSAVE ÇALIŞMAZ
     } 
 };
-        
+ 
     cell.onmousedown = (e) => {
         if (e.button !== 0) return;
         if (cell.classList.contains('filled')) {
@@ -2125,11 +2107,11 @@ function attachGridEvents(cell, proc, colIndex, episodeNum) {
                     return;
                 }
             }
-            
+ 
             cell.classList.toggle('selected'); 
             if (cell.classList.contains('selected')) selectedCells.add(cell); 
             else selectedCells.delete(cell);
-            
+ 
         } else if (cell.classList.contains('filled')) {
             clearActiveSelection();
             cell.classList.add('selected');
@@ -2160,7 +2142,7 @@ function handleRename() {
         else if (len > 9) contextTarget.style.fontSize = "7.5px";
         else if (len > 6) contextTarget.style.fontSize = "9px";
         else contextTarget.style.fontSize = "10px";
-        
+ 
         saveHistory(); 
 
         triggerAutoSave(); // ✅ TAM BURAYA
@@ -2223,7 +2205,7 @@ window.showGridMenu = function(x, y) {
         let left = Math.min(startX, curX), top = Math.min(startY, curY), width = Math.abs(curX - startX), height = Math.abs(curY - startY); 
         selBox.style.left = left + 'px'; selBox.style.top = top + 'px'; 
         selBox.style.width = width + 'px'; selBox.style.height = height + 'px'; 
-        
+ 
         const rectSel = selBox.getBoundingClientRect(); 
         document.querySelectorAll('.timeline.filled').forEach(cell => { 
             const rC = cell.getBoundingClientRect(); 
@@ -2238,7 +2220,7 @@ window.showGridMenu = function(x, y) {
         if (dragSource && e.target.classList.contains('timeline') && e.target !== dragSource) { 
             const colDiff = parseInt(e.target.dataset.col) - parseInt(dragSource.dataset.col); 
             const epDiff = parseInt(e.target.dataset.ep) - parseInt(dragSource.dataset.ep);
-            
+ 
             const moveData = []; 
             let canMove = true;
 
@@ -2255,10 +2237,10 @@ window.showGridMenu = function(x, y) {
 
             if(canMove) {
                 const oldStates = moveData.map(m => ({ cell: m.from, text: m.from.textContent, bg: m.from.style.backgroundColor, filled: m.from.classList.contains('filled') }));
-                
+ 
                 moveData.forEach(d => { d.from.textContent = ""; d.from.style.backgroundColor = ""; d.from.classList.remove("filled", "selected"); }); 
                 moveData.forEach(d => { d.to.textContent = d.text; d.to.style.backgroundColor = d.bg; d.to.classList.add("filled", "selected"); }); 
-                
+ 
                 selectedCells.clear();
                 moveData.forEach(d => selectedCells.add(d.to));
                 saveHistory(); 
@@ -2267,20 +2249,6 @@ window.showGridMenu = function(x, y) {
         dragSource = null; 
     });
 
-
-    function loadSavedData() {
-        if (SAVED_DATA) {
-            document.getElementById("projectName").value = SAVED_DATA.projectName || ""; 
-            document.getElementById("startDate").value = SAVED_DATA.startDate; 
-            createCalendarAction(SAVED_DATA.startDate); 
-            setTimeout(() => {
-                SAVED_DATA.cells.forEach(c => { const target = document.querySelector(`.cell.timeline[data-col="${c.col}"][data-ep="${c.ep}"][data-proc_type="${c.procType}"]`); if (target) { target.dataset.proc = c.procType; target.textContent = c.text; target.style.backgroundColor = c.bg; target.classList.add('filled'); } });
-                if(SAVED_DATA.notes) { document.getElementById('noteList').innerHTML = ''; SAVED_DATA.notes.reverse().forEach(n => { const div = document.createElement('div'); div.className = `note-item ${n.status}`; div.dataset.status = n.status; div.innerHTML = `<span class="note-text">${n.text}</span><span class="note-date">${n.date}</span>`; div.oncontextmenu = (e) => { e.preventDefault(); contextTarget = div; showNoteMenu(e.pageX, e.pageY); }; document.getElementById('noteList').prepend(div); }); }
-                if(SAVED_DATA.milestones) SAVED_DATA.milestones.forEach(col => { const m = document.querySelector(`.cell.date[data-col="${col}"]`); if(m) m.classList.add('milestone'); });
-                saveHistory(); 
-            }, 300);
-        }
-    }
 
     function createCalendarAction(val) {
         if (!val) return; 
@@ -2326,7 +2294,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
     function toggleDaySelection(element, event) {
         event.stopPropagation();
         const currentIdx = parseInt(element.dataset.colIdx);
-        
+ 
         if (event.shiftKey && lastSelectedDayIdx !== null) {
             const start = Math.min(lastSelectedDayIdx, currentIdx);
             const end = Math.max(lastSelectedDayIdx, currentIdx);
@@ -2352,9 +2320,9 @@ document.getElementById('toggleViewBtn').onclick = function() {
     document.getElementById('exportVerticalBtn').onclick = () => {
         const projName = document.getElementById("projectName").value || "PROJE";
         const selectedDays = document.querySelectorAll('.cal-day-cell.selected-day');
-        
+ 
         let mainContent = "";
-        
+ 
         if (selectedDays.length > 0) {
             // Sadece seçili günlerden PDF oluştur
             const sortedSelected = Array.from(selectedDays).sort((a,b) => a.dataset.colIdx - b.dataset.colIdx);
@@ -2380,10 +2348,10 @@ document.getElementById('toggleViewBtn').onclick = function() {
                 return currentActiveDept === 'all' || c.dataset.proc_type === currentActiveDept;
             });
             if (filled.length === 0) return alert("İndirilecek veri bulunamadı!");
-            
+ 
             const plansByDate = {};
             filled.forEach(c => { const col = c.dataset.col; if (!plansByDate[col]) plansByDate[col] = []; plansByDate[col].push({ ep: c.dataset.ep, text: c.textContent, color: c.style.backgroundColor }); });
-            
+ 
             Object.keys(plansByDate).sort((a,b) => a - b).forEach(col => { 
                 let d = new Date(document.getElementById("startDate").value); d.setDate(d.getDate() + parseInt(col)); 
                 mainContent += `<div class="month-section" style="border:1px solid #ccc;margin-bottom:15px;border-radius:6px;overflow:hidden"><div style="background:#f0f0f0;padding:8px 15px;font-weight:bold">${d.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' })}</div>`; 
@@ -2394,13 +2362,13 @@ document.getElementById('toggleViewBtn').onclick = function() {
         const finalHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${projName}</title>
         <style>body { font-family: sans-serif; padding: 40px; } .month-section { page-break-before: always; }</style></head>
         <body><h2 style="border-bottom: 2px solid #000; padding-bottom: 10px;">${projName.toUpperCase()} TAKVİM ÇIKTISI</h2>${mainContent}
-    
+ 
     </div>
 </div>
-        
-        
+ 
+ 
         </body></html>`;
-        
+ 
         const blob = new Blob([finalHtml], { type: 'text/html;charset=utf-8' });
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${projName}_Plan.html`; a.click();
     };
@@ -2433,7 +2401,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
             html += `<div class="month-section">`;
             html += `<div style="background: #1c1f26; color: var(--accent); padding: 10px; font-weight: bold; border-bottom: 2px solid var(--accent); margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;">${monthTitle}</div>`;
             html += `<div class="calendar-view-grid" style="margin-bottom: 20px;">`;
-            
+ 
             let firstDayPos = tempDate.getDay();
             firstDayPos = (firstDayPos === 0 ? 6 : firstDayPos - 1);
 
@@ -2448,7 +2416,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
 
                 html += `<div class="cal-day-cell ${isToday ? 'today-cell' : ''}" data-col-idx="${colIdx}" onclick="toggleDaySelection(this, event)">
                             <div class="day-num">${fullDateLabel}</div>`;
-                
+ 
                 if (groups[colIdx]) {
                     groups[colIdx].sort((a,b) => a.ep - b.ep).forEach(item => {
                         const tag = item.ep == 0 ? "SET" : "E" + item.ep;
@@ -2465,8 +2433,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
 
     window.onload = () => { 
         document.getElementById("startDate").valueAsDate = new Date(); 
-        if (!SAVED_DATA) createCalendarAction(document.getElementById("startDate").value); 
-        loadSavedData(); 
+        createCalendarAction(document.getElementById("startDate").value); 
     };
  document.addEventListener('mousedown', (e) => {
 
@@ -2548,7 +2515,7 @@ function saveProjectAsPost() {
         const cells = Array.from(document.querySelectorAll('.cell.timeline')).map(c => {
             // Yazıyı bulmak için: textContent, innerText veya varsa input değerini dene
             let cellText = c.textContent.trim();
-            
+ 
             // Eğer hücre içinde bir input varsa onun değerini al
             const inputInside = c.querySelector('input');
             if (inputInside) cellText = inputInside.value;
@@ -2579,14 +2546,14 @@ saveToFirebase(data);
             // Yazıyı bulmak için sınıf ismini ve span'ı garantiye alıyoruz
             const textEl = item.querySelector('.note-text') || item.querySelector('span');
             const dateEl = item.querySelector('.note-date');
-            
+ 
             if (textEl) {
                 notes.push({
                     text: textEl.innerText.replace(/\n/g, " ").trim(), // Satır atlamalarını temizle
                     date: dateEl ? dateEl.innerText.trim() : "",
                     status: item.dataset.status || 'waiting'
 
-                    
+ 
                 });
             }
         });
@@ -2606,7 +2573,7 @@ saveToFirebase(data);
         const a = document.createElement('a');
         const simdi = new Date();
         const tarih = simdi.toLocaleDateString('en-US').replace(/\./g, '-');
-        
+ 
         a.href = url;
         a.download = (projName === "proje" ? `Post_Takvim_${tarih}` : projName) + ".post";
         document.body.appendChild(a);
@@ -2630,11 +2597,11 @@ function handleManualLoad(event) {
     reader.onload = function(e) {
         try {
             const data = JSON.parse(e.target.result);
-            
+ 
             // Temel Bilgileri Yükle
             document.getElementById("projectName").value = data.projectName || "";
             document.getElementById("startDate").value = data.startDate || "";
-            
+ 
             // Takvimi Yeniden Oluştur
             if (typeof createCalendarAction === "function") {
                 createCalendarAction(data.startDate);
@@ -2651,20 +2618,20 @@ function handleManualLoad(event) {
                         // Durum sınıfını (waiting, done, canceled) ekle
                         note.className = `note-item ${n.status || 'waiting'}`;
                         note.dataset.status = n.status || 'waiting';
-                        
+ 
                         // Notun içeriğini oluştur
                         note.innerHTML = `
                             <span class="note-text">${n.text}</span>
                             <span class="note-date">${n.date}</span>
                         `;
-                        
+ 
                         // Sağ tık menüsünü tekrar bağla
                         note.oncontextmenu = (ev) => { 
                             ev.preventDefault(); 
                             contextTarget = note; 
                             if(typeof showNoteMenu === "function") showNoteMenu(ev.pageX, ev.pageY); 
                         };
-                        
+ 
                         noteList.appendChild(note);
                     });
                 }
@@ -2684,7 +2651,7 @@ function handleManualLoad(event) {
                 }
                 alert("Yükleme başarılı! " + (data.notes ? data.notes.length : 0) + " not getirildi.");
             }, 600); // 500ms'yi 600ms yaptım, render işleminin bitmesi için daha güvenli
-            
+ 
             event.target.value = ""; 
         } catch (err) { 
             console.error(err);
@@ -2706,13 +2673,20 @@ document.getElementById('openAutoModalBtn').onclick = () => {
 document.getElementById('runAutoSetupBtn').onclick = function() {
     const setStart = document.getElementById('autoSetStart').value;
     const epCount = parseInt(document.getElementById('autoEpCount').value);
-    
+ 
     if (!setStart) return alert("Başlangıç tarihi seçin!");
 
     if (isNaN(epCount) || epCount <= 0) {
         alert("Lütfen geçerli bir TOPLAM BÖLÜM sayısı girin!");
-        epCountInput.focus(); // Kutuyu otomatik seçer ki hemen yazabilesin
+        document.getElementById('autoEpCount').focus(); // Kutuyu otomatik seçer ki hemen yazabilesin
         return; // İşlemi durdur
+    }
+
+    // ⚠️ Mevcut takvimde dolu hücre varsa onay al (yanlışlıkla üzerine yazmayı engelle)
+    const existingFilled = document.querySelectorAll('.cell.timeline.filled').length;
+    if (existingFilled > 0) {
+        const ok = confirm(`Mevcut takvimde ${existingFilled} dolu hücre var. Yeni otomatik takvim oluşturmak bunların üzerine yazacak ve GERİ ALINAMAYACAK. Devam edilsin mi?`);
+        if (!ok) return;
     }
 
     const getVal = (id, def) => {
@@ -2735,6 +2709,10 @@ document.getElementById('runAutoSetupBtn').onclick = function() {
     TOTAL_EPISODES = epCount;
     // Takvim boyunu dinamik tutalım (Set bittikten sonraki post süreci kadar)
     TOTAL_DAYS = days.setTotal + (epCount * 5) + 60; 
+
+    // ✅ Ana #startDate input'unu da senkronize et — aksi halde dikey görünüm,
+    // takvim etiketleri ve kaydetme işlemi hâlâ eski/varsayılan (bugünkü) tarihi kullanıyordu.
+    document.getElementById("startDate").value = setStart;
 
     if (typeof createCalendarAction === "function") {
         createCalendarAction(setStart);
@@ -2783,8 +2761,15 @@ document.getElementById('runAutoSetupBtn').onclick = function() {
             let sendStart = mixStart + days.mix + days.offSend;
             simpleFill(sendStart, 3, i, "send", "SEND");
         }
-        
+ 
         document.getElementById('autoSetupModal').style.display = 'none';
+
+        // ✅ Otomatik takvim tamamlandığında ayrı bir undo noktası oluştur.
+        // Bu olmadan bir sonraki manuel düzenlemede Ctrl+Z, hem o düzenlemeyi
+        // hem de tüm otomatik takvimi birlikte geri alıyordu.
+        saveHistory();
+        triggerAutoSave();
+
         alert(`Takvim oluşturuldu: ${days.setTotal} gün set ve ${epCount} bölüm post akışı.`);
     }, 1200);
 };
@@ -2881,7 +2866,7 @@ function initResize(e){
 
 // Sayfa tamamen yüklendiğinde butonları bağla
 document.addEventListener('DOMContentLoaded', function() {
-    
+ 
     // --- KAPATMA (İPTAL) BUTONU ---
     const closeBtn = document.getElementById('closeAutoModalBtn');
     const modal = document.getElementById('autoSetupModal');
@@ -2903,14 +2888,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-    
-    
+ 
+ 
 </script>
 
 <div id="projectContextMenu" style="display: none; position: fixed; background: #1c1f26; border: 1px solid #444; border-radius: 4px; z-index: 999999 !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5); min-width: 120px;">
-    <button id="deleteProjectBtn" style="background: none; border: none; color: #ff4d4d; padding: 12px 15px; cursor: pointer; width: 100%; text-align: left; font-size: 14px; font-weight: bold;">
+ <button id="deleteProjectBtn" style="background: none; border: none; color: #ff4d4d; padding: 12px 15px; cursor: pointer; width: 100%; text-align: left; font-size: 14px; font-weight: bold;">
         🗑️ Projeyi Sil
-    </button>
+ </button>
 </div>
 </body>
 </html>
