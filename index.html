@@ -993,6 +993,24 @@
 
 
 
+<div id="welcomeModal" class="modal-overlay" style="display:flex;">
+ <div class="modal-content" style="max-width:380px;">
+ <h3>👋 HOŞ GELDİN</h3>
+ <p style="color:#bbb; font-size:13px; line-height:1.6; margin:0 0 20px;">
+ Projelerini bulutta kaydedip istediğin zaman kaldığın yerden devam edebilmek için Google ile giriş yapman önerilir.
+ </p>
+ <div class="modal-buttons" style="margin-bottom:16px;">
+ <button id="welcomeLoginBtn" class="modal-btn btn-confirm">🔑 Google ile Giriş Yap</button>
+ </div>
+ <a href="#" id="welcomeOfflineBtn" style="color:#888; font-size:12px; text-decoration:underline; cursor:pointer;">Offline kullan (giriş yapmadan devam et)</a>
+ </div>
+</div>
+
+<div id="offlineBanner" style="display:none; position:fixed; bottom:0; left:0; width:100%; background:#3a1f1f; color:#ffb3b3; padding:10px 16px; font-size:12px; text-align:center; z-index:19000; border-top:1px solid #ff4d4d;">
+ ⚠️ Offline moddasınız — yaptığın değişiklikler <b>kaydedilmeyecek</b>. Kaydetmek için <a href="#" id="offlineLoginLink" style="color:#fff; text-decoration:underline;">giriş yap</a>.
+ <span id="offlineBannerClose" style="float:right; cursor:pointer; margin-left:15px;">✕</span>
+</div>
+
 <div id="dateModal" class="modal-overlay">
  <div class="modal-content">
  <h3>SELECT START DATE</h3>
@@ -1238,6 +1256,13 @@ window.switchAccount = async () => {
 // --- KAYDETME (NOTLAR DAHİL) ---
 window.handleSaveAction = async (isManual = false) => {
 
+    // ✅ Offline moddaysa sessizce çık — otomatik kaydetme (2 saniyede bir tetiklenen
+    // autosave) artık kullanıcıyı "Please sign in first" alertiyle spam'lemiyor.
+    if (window.isOfflineMode) {
+        if (isManual) showOfflineBanner(); // manuel kaydet'e basarsa hatırlatmayı öne çıkar
+        return;
+    }
+
     if (!auth || !auth.currentUser) { 
         alert("⚠️ Please sign in first."); 
         return; 
@@ -1435,6 +1460,37 @@ function loadProjectToUI(data) {
     }, 600);
 }
  
+// --- OFFLINE MOD YÖNETİMİ ---
+window.isOfflineMode = false;
+
+function showWelcomeModal() {
+    const wm = document.getElementById('welcomeModal');
+    if (wm) wm.style.display = 'flex';
+}
+function hideWelcomeModal() {
+    const wm = document.getElementById('welcomeModal');
+    if (wm) wm.style.display = 'none';
+}
+function showOfflineBanner() {
+    const b = document.getElementById('offlineBanner');
+    if (b) b.style.display = 'block';
+}
+function hideOfflineBanner() {
+    const b = document.getElementById('offlineBanner');
+    if (b) b.style.display = 'none';
+}
+
+window.enterOfflineMode = function() {
+    window.isOfflineMode = true;
+    hideWelcomeModal();
+    showOfflineBanner();
+};
+
+document.getElementById('welcomeLoginBtn').onclick = () => { window.loginWithGoogle(); };
+document.getElementById('welcomeOfflineBtn').onclick = (e) => { e.preventDefault(); window.enterOfflineMode(); };
+document.getElementById('offlineLoginLink').onclick = (e) => { e.preventDefault(); window.loginWithGoogle(); };
+document.getElementById('offlineBannerClose').onclick = () => { hideOfflineBanner(); };
+
 // GİRİŞ DURUMU TAKİBİ
 onAuthStateChanged(auth, (user) => {
     const loginBtn = document.getElementById("googleLoginBtn");
@@ -1448,12 +1504,20 @@ onAuthStateChanged(auth, (user) => {
         if (userWrapper) userWrapper.style.display = "flex";
         if (userName) userName.textContent = user.displayName;
         if (userPhoto) userPhoto.src = user.photoURL || "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32"><circle cx="12" cy="12" r="12" fill="#333"/><circle cx="12" cy="9" r="4" fill="#aaa"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6" fill="#aaa"/></svg>'); 
- 
+
+        // ✅ Giriş yapıldıysa hoş geldin modalı ve offline uyarısı kapanır
+        window.isOfflineMode = false;
+        hideWelcomeModal();
+        hideOfflineBanner();
+
         console.log("Kullanıcı aktif:", user.email);
     } else {
         // Çıkış yapılmışsa
         if (loginBtn) loginBtn.style.display = "block";
         if (userWrapper) userWrapper.style.display = "none";
+
+        // ✅ Kullanıcı giriş yapmamışsa ve henüz offline'ı seçmediyse hoş geldin modalını göster
+        if (!window.isOfflineMode) showWelcomeModal();
     }
 });
 
