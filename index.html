@@ -922,6 +922,7 @@
 }
 
  </style>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 </head>
 <body>
 
@@ -953,6 +954,7 @@
  <button onclick="handleLoadAction()" class="nav-btn"><span>📂</span> LOAD</button>
  
  <button id="exportVerticalBtn" class="nav-btn"><span>📄</span> VERTICAL VIEW</button>
+ <button id="exportExcelBtn" class="nav-btn" style="border-color:#1D6F42;"><span>📊</span> EXCEL'E AKTAR</button>
  <button id="googleLoginBtn" onclick="loginWithGoogle()" class="nav-btn" style="border-color: #4285F4;">
         ⚡Log In
  </button>
@@ -2435,6 +2437,104 @@ document.getElementById('toggleViewBtn').onclick = function() {
  
         const blob = new Blob([finalHtml], { type: 'text/html;charset=utf-8' });
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${projName}_Plan.html`; a.click();
+    };
+
+    // --- EXCEL'E AKTAR (grid'in renkli hücrelerle birebir yansıması) ---
+    function rgbStringToHex(rgbStr) {
+        if (!rgbStr) return null;
+        const m = rgbStr.match(/\d+/g);
+        if (!m || m.length < 3) return null;
+        return m.slice(0, 3).map(n => parseInt(n).toString(16).padStart(2, '0')).join('').toUpperCase();
+    }
+
+    document.getElementById('exportExcelBtn').onclick = () => {
+        if (typeof XLSX === "undefined") {
+            alert("Excel kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin.");
+            return;
+        }
+        if (!dates || dates.length === 0) {
+            alert("Önce bir takvim oluşturun!");
+            return;
+        }
+
+        const projName = document.getElementById("projectName").value || "PROJE";
+
+        // Başlık satırı: EPISODE | PIPELINE | tarih1 | tarih2 ...
+        const headerRow = ["EPISODE", "PIPELINE", ...dates.map(d =>
+            `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`
+        )];
+        const aoa = [headerRow];
+        const merges = [];
+        const styledCells = []; // {r, c, hex, text}
+
+        function buildCellValue(procType, ep) {
+            const rowVals = [];
+            for (let d = 0; d < TOTAL_DAYS; d++) {
+                const cell = document.querySelector(`.cell.timeline.filled[data-col="${d}"][data-ep="${ep}"][data-proc_type="${procType}"]`);
+                if (cell) {
+                    rowVals.push({ text: cell.textContent, hex: rgbStringToHex(cell.style.backgroundColor) });
+                } else {
+                    rowVals.push(null);
+                }
+            }
+            return rowVals;
+        }
+
+        // --- SET satırı (ep=0) ---
+        let rowIdx = aoa.length;
+        let setRow = ["SET", "SET DAYS"];
+        buildCellValue("set", 0).forEach((v, colOffset) => {
+            setRow.push(v ? v.text : "");
+            if (v && v.hex) styledCells.push({ r: rowIdx, c: colOffset + 2, hex: v.hex });
+        });
+        aoa.push(setRow);
+
+        // --- Her bölüm için departman satırları (procOrder rebuildGrid ile aynı sırada) ---
+        const procOrder = ["edit", "cuts", "vfx", "color", "sound", "music", "send"];
+
+        for (let ep = 1; ep <= TOTAL_EPISODES; ep++) {
+            procOrder.forEach((proc, procIdx) => {
+                rowIdx = aoa.length;
+                const label = procIdx === 0 ? "EPISODE " + (ep < 10 ? "0" + ep : ep) : "";
+                const row = [label, proc.toUpperCase()];
+                buildCellValue(proc, ep).forEach((v, colOffset) => {
+                    row.push(v ? v.text : "");
+                    if (v && v.hex) styledCells.push({ r: rowIdx, c: colOffset + 2, hex: v.hex });
+                });
+                aoa.push(row);
+            });
+            // Bölüm etiketini (EPISODE 01 vb.) dikeyde birleştir (merge)
+            merges.push({ s: { r: rowIdx - procOrder.length + 1, c: 0 }, e: { r: rowIdx, c: 0 } });
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+        // Sütun genişlikleri: EPISODE / PIPELINE sabit, tarihler dar
+        ws['!cols'] = [{ wch: 14 }, { wch: 10 }, ...dates.map(() => ({ wch: 6 }))];
+
+        // Başlık satırını kalın yap
+        for (let c = 0; c < headerRow.length; c++) {
+            const ref = XLSX.utils.encode_cell({ r: 0, c });
+            if (ws[ref]) ws[ref].s = { font: { bold: true }, fill: { fgColor: { rgb: "1C1F26" } }, alignment: { horizontal: "center" } };
+        }
+
+        // Dolu hücrelere gerçek arkaplan rengini uygula
+        styledCells.forEach(({ r, c, hex }) => {
+            const ref = XLSX.utils.encode_cell({ r, c });
+            if (ws[ref]) {
+                ws[ref].s = {
+                    fill: { fgColor: { rgb: hex } },
+                    font: { bold: true, sz: 8 },
+                    alignment: { horizontal: "center", vertical: "center", wrapText: true }
+                };
+            }
+        });
+
+        ws['!merges'] = merges;
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Takvim");
+        XLSX.writeFile(wb, `${projName}_Takvim.xlsx`);
     };
 
     function renderVerticalDashboard() {
