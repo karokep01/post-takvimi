@@ -2460,6 +2460,17 @@ document.getElementById('toggleViewBtn').onclick = function() {
             return;
         }
 
+        // ✅ Hangi görünümdeysen Excel de o görünüme göre tasarlanıyor:
+        // Calendar (dikey) modundaysan ay/hafta/gün grid'i, Timeline modundaysan
+        // departman satırlarından oluşan lineer grid.
+        if (isVerticalActive) {
+            exportCalendarStyleExcel();
+        } else {
+            exportLinearStyleExcel();
+        }
+    };
+
+    function exportLinearStyleExcel() {
         const projName = document.getElementById("projectName").value || "PROJE";
         const ROW_OFFSET = 2; // 0: ay satırı, 1: tarih satırı — veri satırları 2'den başlar
 
@@ -2602,7 +2613,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Takvim");
         XLSX.writeFile(wb, `${projName}_Takvim.xlsx`);
-    };
+    }
 
     function renderVerticalDashboard() {
         const startVal = document.getElementById("startDate").value;
@@ -2669,6 +2680,157 @@ document.getElementById('toggleViewBtn').onclick = function() {
             tempDate.setMonth(tempDate.getMonth() + 1);
         }
         vContainer.innerHTML = html;
+    }
+
+    function exportCalendarStyleExcel() {
+        const startVal = document.getElementById("startDate").value;
+        if (!startVal) { alert("Önce bir takvim oluşturun!"); return; }
+        const projName = document.getElementById("projectName").value || "PROJE";
+
+        const TR_MONTH_FULL = ["OCAK","ŞUBAT","MART","NİSAN","MAYIS","HAZİRAN","TEMMUZ","AĞUSTOS","EYLÜL","EKİM","KASIM","ARALIK"];
+        const TR_MONTH_ABBR = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
+        const procOrder = ["set", "edit", "cuts", "vfx", "color", "sound", "music", "send"];
+        const procLabels = { set: "SET", edit: "EDIT", cuts: "CUTS", vfx: "VFX", color: "COLOR", sound: "SOUND", music: "MUSIC", send: "SEND" };
+
+        // Ekrandaki calendar görünümüyle birebir aynı gruplama mantığı — her gün + departman
+        // kombinasyonu için (birden fazla bölüm aynı gün aynı departmanda olabilir diye liste)
+        const filled = Array.from(document.querySelectorAll('.cell.timeline.filled'));
+        const cellMap = {}; // key: `${col}_${proc}` -> [{ep, text, hex}]
+        const activeProcsSet = new Set();
+        let maxColIdx = 0;
+        filled.forEach(c => {
+            const col = parseInt(c.dataset.col);
+            const proc = c.dataset.proc_type;
+            if (col > maxColIdx) maxColIdx = col;
+            if (currentActiveDept !== 'all' && proc !== currentActiveDept) return;
+            const key = `${col}_${proc}`;
+            if (!cellMap[key]) cellMap[key] = [];
+            cellMap[key].push({ ep: parseInt(c.dataset.ep), text: c.textContent, hex: rgbStringToHex(c.style.backgroundColor) });
+            activeProcsSet.add(proc);
+        });
+
+        if (activeProcsSet.size === 0) {
+            alert("Henüz doldurulmuş bir hücre yok — export edilecek veri bulunamadı.");
+            return;
+        }
+
+        // Projede gerçekten kullanılan departmanları, sabit sırada (SET, EDIT, CUTS...) tut
+        const activeProcs = procOrder.filter(p => activeProcsSet.has(p));
+
+        const baseDate = new Date(startVal);
+        const lastDate = new Date(baseDate);
+        lastDate.setDate(baseDate.getDate() + Math.max(maxColIdx, 30));
+
+        const aoa = [];
+        const merges = [];
+        const monthBannerRows = [];
+        const dateHeaderRows = []; // {row, cols: [c0..c6 gerçek gün mü]}
+        const styledCells = []; // {r, c, hex}
+        let rowCursor = 0;
+
+        let tempDate = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+        while (tempDate <= lastDate) {
+            // --- AY BANNER'I ---
+            aoa.push([TR_MONTH_FULL[tempDate.getMonth()] + " " + tempDate.getFullYear(), "", "", "", "", "", ""]);
+            merges.push({ s: { r: rowCursor, c: 0 }, e: { r: rowCursor, c: 6 } });
+            monthBannerRows.push(rowCursor);
+            rowCursor++;
+
+            // --- Ayın günlerini haftalara böl (Pazartesi ilk gün) ---
+            let firstDayPos = tempDate.getDay();
+            firstDayPos = (firstDayPos === 0 ? 6 : firstDayPos - 1);
+            const daysInMonth = new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0).getDate();
+
+            const dayCells = [];
+            for (let i = 0; i < firstDayPos; i++) dayCells.push(null);
+            for (let day = 1; day <= daysInMonth; day++) {
+                const cur = new Date(tempDate.getFullYear(), tempDate.getMonth(), day);
+                const colIdx = Math.round((cur - baseDate) / (1000 * 3600 * 24));
+                dayCells.push({ day, colIdx, date: cur });
+            }
+            while (dayCells.length % 7 !== 0) dayCells.push(null);
+
+            for (let w = 0; w < dayCells.length; w += 7) {
+                const weekSlice = dayCells.slice(w, w + 7);
+
+                // --- TARİH BAŞLIK SATIRI (haftanın 7 günü, doğrudan tarih olarak) ---
+                const headerRowVals = weekSlice.map(dc => {
+                    if (!dc || dc.colIdx < 0 || dc.colIdx >= TOTAL_DAYS) return "";
+                    return `${dc.day} ${TR_MONTH_ABBR[dc.date.getMonth()]} ${dc.date.getFullYear()}`;
+                });
+                aoa.push(headerRowVals);
+                dateHeaderRows.push(rowCursor);
+                rowCursor++;
+
+                // --- Her aktif departman için bir satır ---
+                activeProcs.forEach(proc => {
+                    const rowVals = weekSlice.map(dc => {
+                        if (!dc) return "";
+                        const items = cellMap[`${dc.colIdx}_${proc}`];
+                        if (!items || items.length === 0) return "";
+                        return items.sort((a, b) => a.ep - b.ep)
+                            .map(it => it.ep === 0 ? it.text : `${it.text}`)
+                            .join(" / ");
+                    });
+                    aoa.push(rowVals);
+                    const dataRow = rowCursor;
+
+                    weekSlice.forEach((dc, ci) => {
+                        if (!dc) return;
+                        const items = cellMap[`${dc.colIdx}_${proc}`];
+                        if (items && items.length > 0) {
+                            styledCells.push({ r: dataRow, c: ci, hex: items[0].hex });
+                        }
+                    });
+                    rowCursor++;
+                });
+
+                // Haftalar arası nefes payı (boş satır)
+                aoa.push(["", "", "", "", "", "", ""]);
+                rowCursor++;
+            }
+
+            tempDate.setMonth(tempDate.getMonth() + 1);
+        }
+
+        const ws = XLSX.utils.aoa_to_sheet(aoa);
+        ws['!cols'] = [0,1,2,3,4,5,6].map(() => ({ wch: 16 }));
+        ws['!merges'] = merges;
+
+        // Ay banner'ı — sıcak/pastel ton, koyu kalın yazı (referans görsel gibi)
+        monthBannerRows.forEach(r => {
+            const ref = XLSX.utils.encode_cell({ r, c: 0 });
+            if (ws[ref]) ws[ref].s = { font: { bold: true, sz: 12, color: { rgb: "3A2A22" } }, fill: { fgColor: { rgb: "D9C3B5" } }, alignment: { horizontal: "center", vertical: "center" } };
+        });
+
+        // Tarih başlık satırları — koyu lacivert/mor zemin, beyaz kalın yazı
+        dateHeaderRows.forEach(r => {
+            for (let c = 0; c < 7; c++) {
+                const ref = XLSX.utils.encode_cell({ r, c });
+                if (ws[ref] && ws[ref].v) {
+                    ws[ref].s = { font: { bold: true, color: { rgb: "FFFFFF" } }, fill: { fgColor: { rgb: "241934" } }, alignment: { horizontal: "center", vertical: "center" } };
+                }
+            }
+        });
+
+        // Departman hücreleri — o departmanın gerçek rengiyle
+        styledCells.forEach(({ r, c, hex }) => {
+            const ref = XLSX.utils.encode_cell({ r, c });
+            if (ws[ref] && hex) {
+                ws[ref].s = { fill: { fgColor: { rgb: hex } }, font: { bold: true, sz: 9 }, alignment: { horizontal: "center", vertical: "center", wrapText: true } };
+            }
+        });
+
+        // Satır yükseklikleri: banner/tarih başlıkları kısa, departman satırları normal, boşluk satırı ince
+        ws['!rows'] = aoa.map((row, r) => {
+            if (monthBannerRows.includes(r) || dateHeaderRows.includes(r)) return { hpx: 20 };
+            if (row.every(v => v === "")) return { hpx: 10 };
+            return { hpx: 22 };
+        });
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Takvim");
+        XLSX.writeFile(wb, `${projName}_Takvim_Calendar.xlsx`);
     }
 
     // --- CALENDAR MODU: SAĞ TIK İLE PIPELINE EKLEME ---
