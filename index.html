@@ -1264,7 +1264,12 @@ async function enterSharedReadOnlyView(shareId) {
         // henüz hazır olmayabilir; kısa bir bekleme ile güvenceye alıyoruz.
         const tryLoad = () => {
             if (window.createCalendarAction) {
-                loadProjectToUI(data);
+                // ✅ Yapımcılar/müşteriler lineer (Timeline) görünümde zorlanıyor —
+                // paylaşım linki doğrudan CALENDAR görünümüyle açılsın, isteyen
+                // üstteki butondan Timeline görünümüne geçebilsin.
+                loadProjectToUI(data, () => {
+                    if (window.switchToCalendarView) window.switchToCalendarView();
+                });
             } else {
                 setTimeout(tryLoad, 100);
             }
@@ -1528,10 +1533,15 @@ window.handleLoadAction = async () => {
 };
 
 // --- SAĞ TIK SİLME MANTIĞI ---
-function loadProjectToUI(data) {
+function loadProjectToUI(data, onDone) {
 
     document.getElementById("projectName").value =
         data.projectName;
+
+    // ✅ #startDate input'unu da senkronize et — aksi halde dikey (calendar)
+    // görünüm bu değeri okuyup boş bulduğu için sessizce hiçbir şey çizmiyordu.
+    const startDateInput = document.getElementById("startDate");
+    if (startDateInput) startDateInput.value = data.startDate;
 
     if (window.createCalendarAction) {
 
@@ -1566,6 +1576,11 @@ function loadProjectToUI(data) {
                 }
             });
         }
+
+        // ✅ Hücreler gerçekten dolduktan SONRA çağrılıyor — bu olmadan, örneğin
+        // salt-okunur paylaşım görünümü calendar moduna erken geçerse (hücreler
+        // henüz doldurulmadan), takvim boş görünüyordu.
+        if (typeof onDone === "function") onDone();
 
     }, 600);
 }
@@ -2535,33 +2550,33 @@ window.showGridMenu = function(x, y) {
 
     let lastSelectedDayIdx = null; // Dikey seçim referansı
 
+function switchToCalendarView() {
+    isVerticalActive = true;
+    container.style.display = 'none';
+    vContainer.style.display = 'block';
+    updateToggleViewBtnText();
+    const btn = document.getElementById('toggleViewBtn');
+    if (btn) btn.style.background = "#006064";
+    renderVerticalDashboard();
+}
+
+function switchToTimelineView() {
+    isVerticalActive = false;
+    container.style.display = 'block';
+    vContainer.style.display = 'none';
+    updateToggleViewBtnText();
+    const btn = document.getElementById('toggleViewBtn');
+    if (btn) btn.style.background = "#4a148c";
+}
+
 document.getElementById('toggleViewBtn').onclick = function() {
 
     goTimelineTab();
 
-    isVerticalActive = !isVerticalActive;
-
     if (isVerticalActive) {
-
-        container.style.display = 'none';
-
-        vContainer.style.display = 'block';
-
-        updateToggleViewBtnText();
-
-        this.style.background = "#006064";
-
-        renderVerticalDashboard();
-
+        switchToTimelineView();
     } else {
-
-        container.style.display = 'block';
-
-        vContainer.style.display = 'none';
-
-        updateToggleViewBtnText();
-
-        this.style.background = "#4a148c";
+        switchToCalendarView();
     }
 };
 
