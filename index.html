@@ -237,6 +237,20 @@
         .pop-title { font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 8px; color: var(--accent); }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 20000; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+
+        /* --- SALT-OKUNUR PAYLAŞIM GÖRÜNÜMÜ --- */
+        body.read-only-mode { padding-top: 34px; }
+        body.read-only-mode #mainContainer,
+        body.read-only-mode #verticalViewContainer { pointer-events: none; }
+        body.read-only-mode #openModalBtn,
+        body.read-only-mode #toggleTodayBtn,
+        body.read-only-mode #openAutoModalBtn,
+        body.read-only-mode #saveBtn,
+        body.read-only-mode #shareBtn,
+        body.read-only-mode button[onclick="handleLoadAction()"],
+        body.read-only-mode #userMenuWrapper,
+        body.read-only-mode #googleLoginBtn { display: none !important; }
+        body.read-only-mode #projectName { pointer-events: none; opacity: 0.8; }
         .modal-content { background: var(--bg-panel); padding: 30px; border-radius: 12px; border: 1px solid var(--accent); text-align: center; min-width: 320px; box-shadow: 0 0 30px rgba(255, 0, 0, 0.2); }
         .modal-content h3 { margin-top: 0; color: var(--accent); letter-spacing: 1px; }
         .modal-input { background: #000; border: 1px solid #444; color: #fff; padding: 12px; border-radius: 6px; margin: 20px 0; width: 100%; box-sizing: border-box; font-size: 16px; outline: none; cursor: pointer; text-align: center; font-family: inherit; }
@@ -955,6 +969,7 @@
  
  <button id="exportVerticalBtn" class="nav-btn"><span>📄</span> <span data-i18n="verticalView">VERTICAL VIEW</span></button>
  <button id="exportExcelBtn" class="nav-btn" style="border-color:#1D6F42;"><span>📊</span> <span data-i18n="exportExcel">EXCEL'E AKTAR</span></button>
+ <button id="shareBtn" class="nav-btn" style="border-color:#FFA000;"><span>🔗</span> <span data-i18n="shareBtn">PAYLAŞ</span></button>
  <button id="googleLoginBtn" onclick="loginWithGoogle()" class="nav-btn" style="border-color: #4285F4;">
         ⚡<span data-i18n="logIn">Log In</span>
  </button>
@@ -999,6 +1014,10 @@
 </div>
 
 
+
+<div id="readOnlyBanner" style="display:none; position:fixed; top:0; left:0; width:100%; background:#1a2e1a; color:#a8e6a1; padding:8px 16px; font-size:12px; text-align:center; z-index:19000; border-bottom:1px solid #4CAF50;">
+ 👁️ <span data-i18n="readOnlyBannerText">Bu bir salt-okunur paylaşım görünümüdür — düzenleme yapılamaz.</span>
+</div>
 
 <div id="welcomeModal" class="modal-overlay" style="display:none;">
  <div class="modal-content" style="max-width:380px;">
@@ -1219,6 +1238,88 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// --- SALT-OKUNUR PAYLAŞIM (?share=ID) ---
+// window.isReadOnlyShare, ana (module olmayan) script'in en başında da set ediliyor;
+// burada tekrar okuyoruz çünkü modül script'in kendi üst-seviye kodu, ana script'ten
+// önce ya da sonra çalışabilir (deferred/module script sıralaması garantili değil).
+const __shareParam = new URLSearchParams(location.search).get('share');
+if (__shareParam) {
+    window.isReadOnlyShare = true;
+    document.body.classList.add('read-only-mode');
+    const roBanner = document.getElementById('readOnlyBanner');
+    if (roBanner) roBanner.style.display = 'block';
+    enterSharedReadOnlyView(__shareParam);
+}
+
+async function enterSharedReadOnlyView(shareId) {
+    try {
+        const snap = await getDoc(doc(db, "sharedProjects", shareId));
+        if (!snap.exists()) {
+            alert("Bu paylaşım linki geçersiz veya artık mevcut değil.");
+            return;
+        }
+        const data = snap.data();
+        // loadProjectToUI zaten calendarAction + hücre doldurma işini yapıyor.
+        // window.createCalendarAction main script tarafından tanımlandığı için
+        // henüz hazır olmayabilir; kısa bir bekleme ile güvenceye alıyoruz.
+        const tryLoad = () => {
+            if (window.createCalendarAction) {
+                loadProjectToUI(data);
+            } else {
+                setTimeout(tryLoad, 100);
+            }
+        };
+        tryLoad();
+    } catch (e) {
+        alert("Paylaşım verisi yüklenemedi: " + e.message);
+    }
+}
+
+function generateShareId() {
+    return Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-4);
+}
+
+window.handleShareAction = async () => {
+    if (window.isOfflineMode) { showOfflineBanner(); return; }
+    if (!auth || !auth.currentUser) {
+        alert("⚠️ Paylaşım linki oluşturmak için önce giriş yapmalısınız.");
+        return;
+    }
+
+    const projectName = document.getElementById("projectName").value.trim() || "Untitled Project";
+    const cells = Array.from(document.querySelectorAll('.cell.timeline.filled')).map(c => ({
+        col: c.dataset.col,
+        ep: c.dataset.ep,
+        procType: c.dataset.proc_type,
+        text: c.textContent,
+        bg: c.style.backgroundColor
+    }));
+
+    if (cells.length === 0) {
+        alert("Paylaşılacak bir takvim bulunamadı — önce birkaç hücre doldurun.");
+        return;
+    }
+
+    const data = {
+        projectName,
+        startDate: document.getElementById("startDate")?.value || "",
+        cells,
+        notes: notesState,
+        ownerUid: auth.currentUser.uid,
+        createdAt: new Date().toISOString()
+    };
+
+    const shareId = generateShareId();
+    try {
+        await setDoc(doc(db, "sharedProjects", shareId), data);
+        const url = `${location.origin}${location.pathname}?share=${shareId}`;
+        prompt("Bu linki paylaşabilirsiniz (salt-okunur, kimse düzenleyemez):", url);
+    } catch (e) {
+        alert("Paylaşım linki oluşturulamadı: " + e.message);
+    }
+};
+document.getElementById('shareBtn').onclick = () => window.handleShareAction();
+
 // Kullanıcı tarafından girilen metinleri innerHTML içine basmadan önce kaçışlamak için
 function escapeHtml(str) {
     const div = document.createElement('div');
@@ -1262,6 +1363,8 @@ window.switchAccount = async () => {
 
 // --- KAYDETME (NOTLAR DAHİL) ---
 window.handleSaveAction = async (isManual = false) => {
+
+    if (window.isReadOnlyShare) return; // salt-okunur görünümde kayıt asla tetiklenmemeli
 
     // ✅ Offline moddaysa sessizce çık — otomatik kaydetme (2 saniyede bir tetiklenen
     // autosave) artık kullanıcıyı "Please sign in first" alertiyle spam'lemiyor.
@@ -1500,6 +1603,9 @@ document.getElementById('offlineBannerClose').onclick = () => { hideOfflineBanne
 
 // GİRİŞ DURUMU TAKİBİ
 onAuthStateChanged(auth, (user) => {
+    // ✅ Salt-okunur paylaşım görünümündeyken normal giriş/hoş geldin akışı hiç çalışmasın
+    if (window.isReadOnlyShare) return;
+
     const loginBtn = document.getElementById("googleLoginBtn");
     const userWrapper = document.getElementById("userMenuWrapper");
     const userPhoto = document.getElementById("userPhoto");
@@ -1629,6 +1735,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 let autoSaveTimer = null;
 let isSaving = false;
+
+// ✅ Salt-okunur paylaşım linki mi? (?share=ID) — mümkün olduğunca erken set ediyoruz
+// ki window.onload ve diğer init kodları buna göre davranabilsin.
+window.isReadOnlyShare = !!new URLSearchParams(location.search).get('share');
 
 let TOTAL_DAYS = 365, TOTAL_EPISODES = 16, dates = [], selectedCells = new Set(), dragSource = null, contextTarget = null, isSelecting = false, startX, startY;
 let isVerticalActive = false;
@@ -1771,6 +1881,7 @@ const departments = [
             load: "LOAD",
             verticalView: "VERTICAL VIEW",
             exportExcel: "EXPORT TO EXCEL",
+            shareBtn: "SHARE",
             logIn: "Log In",
             welcomeTitle: "WELCOME",
             welcomeDesc: "It's recommended to sign in with Google so you can save your projects to the cloud and continue anytime.",
@@ -1778,7 +1889,8 @@ const departments = [
             welcomeOfflineBtn: "Use offline (continue without signing in)",
             offlineBannerText: "You're in offline mode — your changes will NOT be saved.",
             offlineBannerPrefix: "To save,",
-            offlineBannerLink: "sign in"
+            offlineBannerLink: "sign in",
+            readOnlyBannerText: "This is a read-only shared view — editing is disabled."
         },
         tr: {
             projectNamePlaceholder: "PROJE ADI...",
@@ -1793,6 +1905,7 @@ const departments = [
             load: "YÜKLE",
             verticalView: "DİKEY GÖRÜNÜM",
             exportExcel: "EXCEL'E AKTAR",
+            shareBtn: "PAYLAŞ",
             logIn: "Giriş Yap",
             welcomeTitle: "HOŞ GELDİN",
             welcomeDesc: "Projelerini bulutta kaydedip istediğin zaman kaldığın yerden devam edebilmek için Google ile giriş yapman önerilir.",
@@ -1800,7 +1913,8 @@ const departments = [
             welcomeOfflineBtn: "Offline kullan (giriş yapmadan devam et)",
             offlineBannerText: "Offline moddasınız — yaptığın değişiklikler kaydedilmeyecek.",
             offlineBannerPrefix: "Kaydetmek için",
-            offlineBannerLink: "giriş yap"
+            offlineBannerLink: "giriş yap",
+            readOnlyBannerText: "Bu bir salt-okunur paylaşım görünümüdür — düzenleme yapılamaz."
         }
     };
 
@@ -3035,6 +3149,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
     }
 
     window.onload = () => { 
+        if (window.isReadOnlyShare) return; // paylaşım verisi module script tarafından yükleniyor
         document.getElementById("startDate").valueAsDate = new Date(); 
         createCalendarAction(document.getElementById("startDate").value); 
     };
