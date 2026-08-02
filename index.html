@@ -1264,6 +1264,10 @@ async function enterSharedReadOnlyView(shareId) {
         // henüz hazır olmayabilir; kısa bir bekleme ile güvenceye alıyoruz.
         const tryLoad = () => {
             if (window.createCalendarAction) {
+                // ✅ Paylaşımı oluşturan kişi hangi dildeydiyse link o dille açılır —
+                // ama görüntüleyen kişi yine de EN/TR anahtarıyla dili değiştirebilir.
+                if (window.setLanguageSilent) window.setLanguageSilent(data.lang || 'en');
+
                 // ✅ Yapımcılar/müşteriler lineer (Timeline) görünümde zorlanıyor —
                 // paylaşım linki doğrudan CALENDAR görünümüyle açılsın, isteyen
                 // üstteki butondan Timeline görünümüne geçebilsin.
@@ -1310,6 +1314,7 @@ window.handleShareAction = async () => {
         startDate: document.getElementById("startDate")?.value || "",
         cells,
         notes: notesState,
+        lang: window.currentLang || 'en',
         ownerUid: auth.currentUser.uid,
         createdAt: new Date().toISOString()
     };
@@ -1515,7 +1520,7 @@ window.handleLoadAction = async () => {
         div.className = "nav-btn project-item";
         div.style = "margin-bottom:10px; width:100%; display:flex; justify-content: space-between; padding:15px; font-size:14px; cursor:pointer; background:#1c1f26; border:1px solid #333; border-radius:6px;";
  
-        const dateDisplay = d.lastUpdated ? new Date(d.lastUpdated).toLocaleDateString('en-US') : 'No date';
+        const dateDisplay = d.lastUpdated ? new Date(d.lastUpdated).toLocaleDateString(window.localeStr ? window.localeStr() : 'en-US') : 'No date';
         div.innerHTML = `<span>📂 ${escapeHtml(d.projectName)}</span> <small>${escapeHtml(dateDisplay)}</small>`;
  
         div.onclick = () => {
@@ -1933,7 +1938,12 @@ const departments = [
         }
     };
 
-    let currentLang = localStorage.getItem('appLang') || 'en';
+    let currentLang = window.currentLang = localStorage.getItem('appLang') || 'en';
+
+    // Tarih formatlama (ay/gün isimleri) için: seçili dile göre doğru locale string.
+    // Intl otomatik olarak Türkçe ay/gün kısaltmalarını doğru üretiyor, elle çeviri tablosu gerekmiyor.
+    function localeStr() { return currentLang === 'tr' ? 'tr-TR' : 'en-US'; }
+    window.localeStr = localeStr;
 
     function updateToggleViewBtnText() {
         const btn = document.getElementById('toggleViewBtn');
@@ -1962,13 +1972,27 @@ const departments = [
             trBtn.style.background = currentLang === 'tr' ? 'var(--neon-green)' : 'transparent';
             trBtn.style.color = currentLang === 'tr' ? '#000' : '#888';
         }
+        // ✅ Ay/gün isimleri içeren görünümleri yeniden çiz ki dil değişince onlar da güncellensin
+        if (typeof buildHeader === "function" && dates && dates.length) buildHeader();
+        if (isVerticalActive && typeof renderVerticalDashboard === "function") renderVerticalDashboard();
     }
 
     function setLanguage(lang) {
         currentLang = lang;
+        window.currentLang = lang;
         localStorage.setItem('appLang', lang);
         applyLanguage();
     }
+
+    // ✅ Paylaşım linkinden gelen dili uygular ama kullanıcının kendi cihazındaki
+    // varsayılan dil tercihini (localStorage) DEĞİŞTİRMEZ — sadece bu görünüm için geçerli.
+    // Görüntüleyen kişi yine de EN/TR anahtarıyla istediği dile geçebilir.
+    function setLanguageSilent(lang) {
+        currentLang = lang;
+        window.currentLang = lang;
+        applyLanguage();
+    }
+    window.setLanguageSilent = setLanguageSilent;
 
     document.getElementById('langEnBtn').onclick = () => setLanguage('en');
     document.getElementById('langTrBtn').onclick = () => setLanguage('tr');
@@ -2255,7 +2279,7 @@ window.addEventListener('keydown', (e) => {
     function showDateSummary(colIdx, x, y) {
         const dateObj = dates[colIdx];
         const filledCells = document.querySelectorAll(`.cell.timeline.filled[data-col="${colIdx}"]`);
-        let html = `<div class="pop-title">${dateObj.toLocaleDateString('en-US', {day:'numeric', month:'long', weekday:'long'})}</div>`;
+        let html = `<div class="pop-title">${dateObj.toLocaleDateString(localeStr(), {day:'numeric', month:'long', weekday:'long'})}</div>`;
         if(filledCells.length === 0) html += `<div style="opacity:0.5;font-style:italic;">No schedule.</div>`;
         else filledCells.forEach(cell => { const ep = cell.dataset.ep == 0 ? "SET" : "EPISODE" + cell.dataset.ep; html += `<div style="display:flex;gap:8px;margin-bottom:4px;align-items:center;"><div style="width:8px;height:8px;border-radius:50%;background:${cell.style.backgroundColor}"></div><b>${ep}:</b><span>${cell.textContent}</span></div>`; });
         summaryPop.innerHTML = html; summaryPop.style.display = "block"; summaryPop.style.left = x + "px"; summaryPop.style.top = (y + 30) + "px";
@@ -2283,7 +2307,7 @@ function buildHeader() {
 
     let dIdx = 0;
     months.forEach(mSpan => { 
-        header.innerHTML += `<div class="cell month" style="grid-column: span ${mSpan}">${dates[dIdx].toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase()}</div>`; 
+        header.innerHTML += `<div class="cell month" style="grid-column: span ${mSpan}">${dates[dIdx].toLocaleDateString(localeStr(), { month: "long", year: "numeric" }).toUpperCase()}</div>`; 
         dIdx += mSpan; 
     });
 
@@ -2291,7 +2315,7 @@ function buildHeader() {
         let dCell = document.createElement("div"); 
         dCell.className = "cell date"; 
         // Gün ismini kısa formatta ekliyoruz (Pzt, Sal...)
-        const dayName = d.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+        const dayName = d.toLocaleDateString(localeStr(), { weekday: 'short' }).toUpperCase();
         dCell.innerHTML = `<div style="line-height:1.2; padding-top:2px;">${d.getDate()}/${d.getMonth()+1}<br><span style="font-size:8px; opacity:0.7;">${dayName}</span></div>`; 
  
         dCell.dataset.col = i;
@@ -2644,7 +2668,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
  
             Object.keys(plansByDate).sort((a,b) => a - b).forEach(col => { 
                 let d = new Date(document.getElementById("startDate").value); d.setDate(d.getDate() + parseInt(col)); 
-                mainContent += `<div class="month-section" style="border:1px solid #ccc;margin-bottom:15px;border-radius:6px;overflow:hidden"><div style="background:#f0f0f0;padding:8px 15px;font-weight:bold">${d.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' })}</div>`; 
+                mainContent += `<div class="month-section" style="border:1px solid #ccc;margin-bottom:15px;border-radius:6px;overflow:hidden"><div style="background:#f0f0f0;padding:8px 15px;font-weight:bold">${d.toLocaleDateString(localeStr(), { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' })}</div>`; 
                 plansByDate[col].sort((a,b) => a.ep - b.ep).forEach(item => { mainContent += `<div style="display:flex;align-items:center;padding:8px 15px;border-bottom:1px solid #eee"><div style="width:12px;height:12px;border-radius:50%;margin-right:12px;background:${item.color}"></div><b>${item.ep == 0 ? 'SET' : 'BÖLÜM ' + item.ep}:</b>&nbsp;${item.text}</div>`; }); mainContent += `</div>`; 
             });
         }
@@ -2707,7 +2731,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
                 const m = dates[dIdx].getMonth();
                 let span = 0;
                 while (dIdx + span < dates.length && dates[dIdx + span].getMonth() === m) span++;
-                monthRow[2 + dIdx] = dates[dIdx].toLocaleDateString("en-US", { month: "long", year: "numeric" }).toUpperCase();
+                monthRow[2 + dIdx] = dates[dIdx].toLocaleDateString(localeStr(), { month: "long", year: "numeric" }).toUpperCase();
                 if (span > 1) monthMerges.push({ s: { r: 0, c: 2 + dIdx }, e: { r: 0, c: 2 + dIdx + span - 1 } });
                 dIdx += span;
             }
@@ -2863,7 +2887,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
         let tempDate = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
 
         while (tempDate <= lastDate) {
-            let monthTitle = tempDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            let monthTitle = tempDate.toLocaleDateString(localeStr(), { month: 'long', year: 'numeric' });
             html += `<div class="month-section">`;
             html += `<div style="background: #1c1f26; color: var(--accent); padding: 10px; font-weight: bold; border-bottom: 2px solid var(--accent); margin-top: 20px; text-transform: uppercase; letter-spacing: 1px;">${monthTitle}</div>`;
             html += `<div class="calendar-view-grid" style="margin-bottom: 20px;">`;
@@ -2878,7 +2902,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
                 let cur = new Date(tempDate.getFullYear(), tempDate.getMonth(), day);
                 const colIdx = Math.round((cur - baseDate) / (1000 * 3600 * 24));
                 const isToday = cur.toDateString() === new Date().toDateString();
-                const fullDateLabel = cur.toLocaleDateString('en-US', { day: 'numeric', month: 'long', weekday: 'long' });
+                const fullDateLabel = cur.toLocaleDateString(localeStr(), { day: 'numeric', month: 'long', weekday: 'long' });
 
                 // ⚠️ Proje başlangıç tarihinden ÖNCEKİ günler timeline grid'inde bir
                 // sütuna karşılık gelmiyor (grid 0'dan, yani başlangıç tarihinden başlıyor).
@@ -2913,6 +2937,9 @@ document.getElementById('toggleViewBtn').onclick = function() {
 
         const TR_MONTH_FULL = ["OCAK","ŞUBAT","MART","NİSAN","MAYIS","HAZİRAN","TEMMUZ","AĞUSTOS","EYLÜL","EKİM","KASIM","ARALIK"];
         const TR_MONTH_ABBR = ["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
+        // ✅ Excel'e aktarırken de o an aktif olan dile (EN/TR) göre ay isimleri kullanılır
+        const monthFullName = (d) => currentLang === 'tr' ? TR_MONTH_FULL[d.getMonth()] : d.toLocaleDateString('en-US', { month: 'long' }).toUpperCase();
+        const monthAbbrName = (d) => currentLang === 'tr' ? TR_MONTH_ABBR[d.getMonth()] : d.toLocaleDateString('en-US', { month: 'short' });
         const procOrder = ["set", "edit", "cuts", "vfx", "color", "sound", "music", "send"];
         const procLabels = { set: "SET", edit: "EDIT", cuts: "CUTS", vfx: "VFX", color: "COLOR", sound: "SOUND", music: "MUSIC", send: "SEND" };
 
@@ -2955,7 +2982,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
         let tempDate = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
         while (tempDate <= lastDate) {
             // --- AY BANNER'I ---
-            aoa.push([TR_MONTH_FULL[tempDate.getMonth()] + " " + tempDate.getFullYear(), "", "", "", "", "", ""]);
+            aoa.push([monthFullName(tempDate) + " " + tempDate.getFullYear(), "", "", "", "", "", ""]);
             merges.push({ s: { r: rowCursor, c: 0 }, e: { r: rowCursor, c: 6 } });
             monthBannerRows.push(rowCursor);
             rowCursor++;
@@ -2980,7 +3007,7 @@ document.getElementById('toggleViewBtn').onclick = function() {
                 // --- TARİH BAŞLIK SATIRI (haftanın 7 günü, doğrudan tarih olarak) ---
                 const headerRowVals = weekSlice.map(dc => {
                     if (!dc || dc.colIdx < 0 || dc.colIdx >= TOTAL_DAYS) return "";
-                    return `${dc.day} ${TR_MONTH_ABBR[dc.date.getMonth()]} ${dc.date.getFullYear()}`;
+                    return `${dc.day} ${monthAbbrName(dc.date)} ${dc.date.getFullYear()}`;
                 });
                 aoa.push(headerRowVals);
                 dateHeaderRows.push(rowCursor);
